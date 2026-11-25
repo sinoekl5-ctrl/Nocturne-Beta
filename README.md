@@ -60,7 +60,7 @@ The five candidate repositories have been inspected and pinned. The audit record
 - [Immutable upstream pins](docs/third-party/upstream-pins.csv)
 - [Architecture](docs/architecture.md)
 
-The latest audited Helium `main` pin names Chromium **158.0.8127.88**. Ardia's current engine-build document uses Chromium **158.0.8127.36** with Helium **0.22.2**; those are not interchangeable pin sets. Nocturne must reproduce one coherent set before starting a browser build.
+The latest audited Helium `main` pin names Chromium **158.0.8127.88**. All three pinned Helium platform-packaging commits (macOS, Linux and Windows) point their `helium-chromium` submodule at that exact Helium commit; the source-level alignment is now machine-checked. Ardia's current engine-build document uses Chromium **158.0.8127.36** with Helium **0.22.2**; those are not interchangeable pin sets. Source-pin alignment is not a successful native build. See [the verified Helium engine baseline](docs/third-party/helium-engine-baseline.md).
 
 ## Five Space moods
 
