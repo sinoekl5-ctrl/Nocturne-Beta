@@ -22,7 +22,7 @@ The checkout helper does not build Chromium or install tools. It clones the sele
 python scripts/engine/checkout.py --platform Linux --workspace /path/to/nocturne-engine
 ```
 
-Use `macOS` or `Windows` for those package repos. The default workspace is `~/.cache/nocturne/engine`. The helper refuses to overwrite an existing unverified directory; remove or rename a failed checkout yourself after inspecting it.
+Use `macOS` or `Windows` for those package repos. The default workspace is `~/.cache/nocturne/engine`. The helper refuses to overwrite an existing unverified directory; inspect and remove/rename a failed checkout yourself before retrying.
 
 ## Verification boundary
 
@@ -36,7 +36,7 @@ Do not combine Ardia's separately documented Chromium `158.0.8127.36` / Helium `
 - **Linux:** use the pinned Linux packaging repository and matching submodule. Record distribution, kernel/display stack, CPU, RAM, disk, elapsed time and output hashes. Do not claim Flatpak support while the upstream sandbox issue is unresolved.
 - **Windows:** use the pinned Windows packaging repository and matching submodule with the documented Visual Studio/Windows SDK toolchain. Run build and launch smoke tests on Windows 11 hardware or a clearly identified VM.
 
-For each platform, preserve checked-out SHAs, Chromium version, OS/toolchain versions, command transcript, elapsed time, exit status, artifact SHA-256 and launch/smoke-test results. A successful compile alone is not release readiness.
+For each platform, fill [the build record template](engine-build-record-template.json) with checked-out SHAs, Chromium version, OS/toolchain versions, command transcript, elapsed time, exit status, artifact SHA-256 and launch/smoke-test results. A successful compile alone is not release readiness.
 
 ## Next gate
 
