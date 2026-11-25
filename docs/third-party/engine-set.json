@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "source-pins-verified-build-not-verified",
+  "helium": {
+    "repository": "imputnet/helium",
+    "commit": "41a32da3ed31e0c4a550b7f317f5ab095deee1c9",
+    "chromium_version": "158.0.8127.88",
+    "version_file": "chromium_version.txt"
+  },
+  "platform_packages": {
+    "macOS": {
+      "repository": "imputnet/helium-macos",
+      "commit": "0b5bf1274dfce6aa8163060d9a7172fd7bac409b",
+      "helium_chromium_submodule": "41a32da3ed31e0c4a550b7f317f5ab095deee1c9"
+    },
+    "Linux": {
+      "repository": "imputnet/helium-linux",
+      "commit": "4c8b8256a29290d57a5dd279c4228e770cf3904e",
+      "helium_chromium_submodule": "41a32da3ed31e0c4a550b7f317f5ab095deee1c9"
+    },
+    "Windows": {
+      "repository": "imputnet/helium-windows",
+      "commit": "4f7143df92fd0c29ce50c4856523bb8390bf6753",
+      "helium_chromium_submodule": "41a32da3ed31e0c4a550b7f317f5ab095deee1c9"
+    }
+  },
+  "verification": {
+    "platform_gitlinks_match": true,
+    "native_builds_completed": false,
+    "note": "Source identities only; not evidence of a Chromium build or a working installer."
+  }
+}
