@@ -424,7 +424,6 @@ $("#focusFirstPane").addEventListener("click", () => focusPane(1));
 $("#focusSecondPane").addEventListener("click", () => focusPane(2));
 $("#nextSecondPane").addEventListener("click", () => { renderSecondPanePage(state.secondPanePage + 1); focusPane(2); });
 $("#closeSplit").addEventListener("click", () => setSplit(false));
-$("#focusSecondPane").addEventListener("click", () => { state.activePane = 2; announce("Second pane selected."); });
 $("#readingToggle").addEventListener("click", () => setReading(!state.reading));
 $("#privateToggle").addEventListener("click", togglePrivate);
 $("#settingsButton").addEventListener("click", openSettings);
