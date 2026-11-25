@@ -23,3 +23,6 @@ test("Closing Split View resets focus to the primary pane", () => {
   assert.match(app, /state\.activePane = 1/);
   assert.match(app, /dataset\.activePane = "1"/);
 });
+test("Second pane focus has a single event handler", () => {
+  assert.equal((app.match(/\$\("#focusSecondPane"\)\.addEventListener\("click"/g) ?? []).length, 1);
+});
