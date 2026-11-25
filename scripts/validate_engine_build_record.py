@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse, json, re, sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-SHA40=re.compile(r"^[0-9a-f]{40}$")
 SHA256=re.compile(r"^[0-9a-f]{64}$")
 PLATFORMS={"macOS","Linux","Windows"}
 STATUSES={"not-run","blocked","failed","succeeded"}
@@ -14,7 +13,7 @@ def validate_record(record:dict,lock:dict,require_success:bool=False)->list[str]
     status=record.get("status")
     if status not in STATUSES: errors.append(f"status must be one of {sorted(STATUSES)}")
     source=record.get("source",{}); platform=source.get("platform")
-    if platform not in PLATFORMS: errors.append("source.platform must be macOS, Linux or Windows")
+    if platform not in PLATFORMS and not (status=="not-run" and platform is None and not require_success): errors.append("source.platform must be macOS, Linux or Windows")
     if status=="succeeded" or require_success:
         if status!="succeeded": errors.append("record status is not succeeded")
         if platform not in lock.get("platform_packages",{}): errors.append("source.platform is not present in engine lock")
