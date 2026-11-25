@@ -41,3 +41,24 @@ test('SBOM declares its limited scope', () => {
 test('committed sbom.cdx.json matches upstream-pins.csv', () => {
   assert.equal(readFileSync(SBOM_PATH, 'utf8'), renderSbom(pins()));
 });
+
+test('CSV rejects malformed quoting and inconsistent row widths', () => {
+  assert.throws(() => parseCsv('a,b\n"unterminated,b\n'), /Unterminated quoted CSV field/);
+  assert.throws(() => parseCsv('a,b\n1,2,3\n'), /expected 2$/);
+  assert.throws(() => parseCsv('a,b\n"quoted"tail,2\n'), /Unexpected character after closing CSV quote/);
+});
+
+test('upstream CSV keeps comma-containing Ardia role in the correct field', () => {
+  const ardia = pins().find((pin) => pin.repository === 'ardia-browser/ardia');
+  assert.equal(ardia.observed_role, 'Chromium browser UX, Linux host, evolving Windows host');
+  assert.equal(ardia.decision, 'Port behavior; audit any code');
+  assert.equal(ardia.checked_at_utc, '2026-11-25');
+  assert.equal(ardia.notes, 'Current engine-build docs use Chromium 158.0.8127.36 and Helium 0.22.2; not same as current Helium root main pin');
+});
+
+test('duplicate repositories and invalid audit dates are rejected', () => {
+  const rows = pins();
+  assert.throws(() => buildSbom([...rows, rows[0]]), /Duplicate repository pin/);
+  rows[0] = { ...rows[0], checked_at_utc: '2026-02-31' };
+  assert.throws(() => buildSbom(rows), /Invalid checked_at_utc date/);
+});

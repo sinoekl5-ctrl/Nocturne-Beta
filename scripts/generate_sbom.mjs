@@ -22,30 +22,62 @@ export function parseCsv(text) {
   let row = [];
   let field = '';
   let quoted = false;
+  let afterQuote = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (quoted) {
       if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++; } else { quoted = false; }
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else { quoted = false; afterQuote = true; }
       } else { field += c; }
-    } else if (c === '"') {
+      continue;
+    }
+    if (afterQuote) {
+      if (c === ' ' || c === '\t') continue;
+      if (c !== ',' && c !== '\n' && c !== '\r') throw new Error(`Unexpected character after closing CSV quote at offset ${i}`);
+      afterQuote = false;
+    }
+    if (c === '"') {
+      if (field !== '') throw new Error(`Unexpected CSV quote at offset ${i}`);
       quoted = true;
     } else if (c === ',') {
       row.push(field); field = '';
     } else if (c === '\n' || c === '\r') {
       if (c === '\r' && text[i + 1] === '\n') i++;
-      row.push(field); field = ''; rows.push(row); row = [];
-    } else {
-      field += c;
-    }
+      row.push(field); field = '';
+      if (row.some((value) => value !== '')) rows.push(row);
+      row = [];
+    } else { field += c; }
   }
-  if (field !== '' || row.length) { row.push(field); rows.push(row); }
-  const [header, ...body] = rows.filter((r) => r.some((v) => v !== ''));
-  return body.map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ''])));
+  if (quoted) throw new Error('Unterminated quoted CSV field');
+  if (field !== '' || row.length) {
+    row.push(field);
+    if (row.some((value) => value !== '')) rows.push(row);
+  }
+  if (!rows.length) throw new Error('CSV is empty');
+  const [header, ...body] = rows;
+  if (header.some((name) => !name) || new Set(header).size !== header.length) throw new Error('CSV header contains an empty or duplicate column name');
+  return body.map((values, index) => {
+    if (values.length !== header.length) throw new Error(`CSV row ${index + 2} has ${values.length} fields; expected ${header.length}`);
+    return Object.fromEntries(header.map((name, i) => [name, values[i]]));
+  });
 }
 
 export function buildSbom(pins) {
-  const dates = pins.map((p) => p.checked_at_utc).filter(Boolean).sort();
+  const seen = new Set();
+  for (const pin of pins) {
+    for (const key of ['repository', 'ref', 'commit', 'license_summary', 'observed_role', 'decision', 'checked_at_utc', 'notes']) {
+      if (!pin[key]?.trim()) throw new Error(`Pin for ${pin.repository || '(unknown repository)'} is missing ${key}`);
+    }
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(pin.repository)) throw new Error(`Invalid GitHub repository: ${pin.repository}`);
+    if (seen.has(pin.repository)) throw new Error(`Duplicate repository pin: ${pin.repository}`);
+    seen.add(pin.repository);
+    const date = new Date(`${pin.checked_at_utc}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(pin.checked_at_utc) || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== pin.checked_at_utc) {
+      throw new Error(`Invalid checked_at_utc date for ${pin.repository}: ${pin.checked_at_utc}`);
+    }
+  }
+  const dates = pins.map((p) => p.checked_at_utc).sort();
   const components = pins
     .map((p) => {
       if (!/^[0-9a-f]{40}$/.test(p.commit)) {

@@ -27,7 +27,7 @@
       "name": "ardia-browser/ardia",
       "version": "55f041374a10605be46fbbe6aa935d557ee22b24",
       "purl": "pkg:github/ardia-browser/ardia@55f041374a10605be46fbbe6aa935d557ee22b24",
-      "description": "Chromium browser UX",
+      "description": "Chromium browser UX, Linux host, evolving Windows host",
       "licenses": [
         {
           "license": {
@@ -48,15 +48,15 @@
         },
         {
           "name": "nocturne:decision",
-          "value": " Linux host"
+          "value": "Port behavior; audit any code"
         },
         {
           "name": "nocturne:checked-at",
-          "value": " evolving Windows host"
+          "value": "2026-11-25"
         },
         {
           "name": "nocturne:notes",
-          "value": "Port behavior; audit any code"
+          "value": "Current engine-build docs use Chromium 158.0.8127.36 and Helium 0.22.2; not same as current Helium root main pin"
         }
       ]
     },
