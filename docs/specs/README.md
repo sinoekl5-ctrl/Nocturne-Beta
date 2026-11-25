@@ -15,7 +15,7 @@ This folder implements step 4 of the brief's merge workflow: one page per featur
 
 Already in flight elsewhere: the Clean Links core (PR #2) and the WebUI bridge contract (PR #1). They are not re-specified here.
 
-Not yet specified: split view, Peek, importers, content blocking, onboarding.
+Adjacent shell specs (scores below the first-wave cutoff) are also included for early design review: [Split view](split-view.md) and [Peek](peek.md).\n\nStill not specified: importers, content blocking, onboarding.
 
 ## Conventions
 
