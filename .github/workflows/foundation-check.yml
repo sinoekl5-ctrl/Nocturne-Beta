@@ -2,7 +2,7 @@ name: Foundation checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, "feature/**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -12,8 +12,12 @@ permissions:
 
 jobs:
   foundation-check:
-    name: Validate Phase 0 + prototype
-    runs-on: ubuntu-latest
+    name: Core and foundation checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -27,5 +31,5 @@ jobs:
           node-version: "22"
       - name: Validate required files, license and source pins
         run: python scripts/validate_foundation.py
-      - name: Test prototype core logic
+      - name: Test dependency-free browser core
         run: npm test
