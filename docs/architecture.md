@@ -35,6 +35,8 @@ The first implementation spike should test one shared privileged WebUI page (pro
 
 This is a proposed direction, not a completed integration. A privileged WebUI must not become a general-purpose webpage bridge. Validate the committing origin and primary frame, use a typed allow-listed request schema, reject untrusted page-origin calls, and keep credentials/filesystem access out of the UI surface. The standalone `prototype/` is a visual/interaction study and must not automatically be treated as safe privileged UI code.
 
+The typed request envelope, initial action allowlist, fail-closed reference validator and native-host exit criteria are recorded in [the WebUI bridge security contract](security/webui-bridge-contract.md). The validator is a protocol test oracle only; no privileged Chromium bridge is implemented.
+
 The current Ardia source audit shows a Chromium-hosted WebUI desktop-shell direction on Linux and an evolving Windows WebUI implementation. Its Windows PR #1116 was merged and its initial alpha ran CI self-checks and tours on Windows 11 VM/GitHub runners, but the PR explicitly had not been tried on real PC hardware. Current main docs also list Windows-specific incomplete calls/features. Use it as evidence and a behavior reference, not as proof of Nocturne cross-platform readiness.
 
 ## Space model
