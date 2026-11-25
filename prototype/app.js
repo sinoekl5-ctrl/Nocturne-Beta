@@ -138,6 +138,7 @@ function setLanguage(language) {
   $("#newTab > span:nth-child(2)").textContent = labels.newTab;
   $("#privateLabel").textContent = labels.privateRoom;
   $("#preferencesLabel").textContent = labels.preferences;
+  $("#settingsQuick").setAttribute("aria-label", labels.preferences);
   $("#omniboxButton .omnibox-label").textContent = labels.search;
   $("#statusLabel").textContent = labels.status;
   $("#phaseLabel").textContent = labels.phase;
