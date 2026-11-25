@@ -12,7 +12,7 @@ test("prototype exposes an accessible three-mode cleaner preference", () => {
   assert.match(html, /<label class="sr-only" for="urlCleanerMode">/);
   assert.match(html, /<select class="setting-select" id="urlCleanerMode" aria-describedby="urlCleanerDescription">/);
   for (const mode of ["disable", "suggest", "auto"]) {
-    assert.match(html, new RegExp('<option value="' + mode + '">'));
+    assert.match(html, new RegExp('<option value="' + mode + '"(?: selected)?>'));
   }
   assert.match(app, /\$\("#urlCleanerMode"\)\.addEventListener\("change"/);
 });
