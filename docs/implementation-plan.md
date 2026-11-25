@@ -8,6 +8,7 @@ This plan aligns the 25 November 2026 source audit with the requested Windows, L
 - **Phase 1 — Source/document audit:** pinned source metadata/trees/licenses/build docs, first-pass decisions and structural alignment of all three Helium platform-package gitlinks complete; native build reproduction and SBOM remain open.
 - **Phase 2 — Visual prototype:** first local UI prototype implemented and unit-tested; human visual/accessibility review remains open.
 - **Phase 3 onward:** not started; no Chromium integration or runnable browser yet.
+- **L2 core helper:** a pure URL-cleaner policy helper now exists with Disable / Suggest / Auto modes and isolated regression tests; it is not connected to live navigation or settings.
 
 ## Phase 0 — Foundations (brief estimate: about 1 week)
 
@@ -72,7 +73,9 @@ Implement real Chromium-backed tabs, pins, folders, sessions, split view, Peek a
 
 ## Phase 5 — Privacy and import (brief estimate: 3–5 weeks)
 
-Integrate the approved, license-reviewed blocker/filter-list path; URL cleaner with Disable/Suggest/Auto-clean modes; selected safe importers; local Insights; onboarding.
+Integrate the approved, license-reviewed blocker/filter-list path; connect the tested URL-cleaner core helper to the real omnibox/navigation path and per-Space Disable/Suggest/Auto-clean settings; add selected safe importers; local Insights; onboarding.
+
+The pure URL-cleaner helper is implemented in `packages/core/url-cleaner.mjs`; see `docs/core/url-cleaner.md`. Browser navigation, persistence, preference UI and redirect/history integration remain open.
 
 **Exit:** tested import without data loss, readable privacy controls, Insights local-only, no telemetry by default.
 
