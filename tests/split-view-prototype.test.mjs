@@ -22,6 +22,8 @@ test("Split View updates focus state and clearly marks local-only samples", () =
 test("Closing Split View resets focus to the primary pane", () => {
   assert.match(app, /state\.activePane = 1/);
   assert.match(app, /dataset\.activePane = "1"/);
+  assert.match(app, /focusFirstPane.*setAttribute\("aria-pressed", "true"\)/);
+  assert.match(app, /focusSecondPane.*setAttribute\("aria-pressed", "false"\)/);
 });
 test("Second pane focus has a single event handler", () => {
   assert.equal((app.match(/\$\("#focusSecondPane"\)\.addEventListener\("click"/g) ?? []).length, 1);
