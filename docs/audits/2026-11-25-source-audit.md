@@ -33,6 +33,28 @@ The main repository contains patches, flags, substitutions, pruning rules, build
 
 These are separate build systems, not one ready-made universal build command. The exact Helium main pin and platform package pins must be tested together before adopting them as a Nocturne release baseline.
 
+### Verified Helium platform-package alignment
+
+The three pinned platform-packaging commits were inspected at their immutable refs. Each repository contains a helium-chromium Git submodule/gitlink that resolves to the exact Helium root commit: 41a32da3ed31e0c4a550b7f317f5ab095deee1c9. The chromium_version.txt file at that root commit reads 158.0.8127.88.
+
+| Platform packaging repository | Pinned package commit | helium-chromium gitlink |
+|---|---|---|
+| [helium-macos](https://github.com/imputnet/helium-macos/tree/0b5bf1274dfce6aa8163060d9a7172fd7bac409b) | 0b5bf1274dfce6aa8163060d9a7172fd7bac409b | 41a32da3ed31e0c4a550b7f317f5ab095deee1c9 |
+| [helium-linux](https://github.com/imputnet/helium-linux/tree/4c8b8256a29290d57a5dd279c4228e770cf3904e) | 4c8b8256a29290d57a5dd279c4228e770cf3904e | 41a32da3ed31e0c4a550b7f317f5ab095deee1c9 |
+| [helium-windows](https://github.com/imputnet/helium-windows/tree/4f7143df92fd0c29ce50c4856523bb8390bf6753) | 4f7143df92fd0c29ce50c4856523bb8390bf6753 | 41a32da3ed31e0c4a550b7f317f5ab095deee1c9 |
+
+This resolves the source-pointer mismatch risk between Helium's root patch repository and its three packaging repositories for this snapshot. The exact relationship is recorded in docs/third-party/upstream-pins.csv and checked by scripts/validate_foundation.py.
+
+This is a source-level pin verification only. It does not demonstrate that Chromium compiles, that the patch series applies cleanly on a fresh build host, or that any packaged browser launches.
+
+### Platform build prerequisites observed at the pinned refs
+
+- **macOS:** the pinned building guide calls for macOS 12+, Xcode 26, the Metal toolchain, and Homebrew dependencies (or the provided Nix development shell). A native Apple build host is required.
+- **Linux:** the pinned package repo provides scripts/docker-build.sh; it builds a Debian Trixie-based chromium-builder image using Docker Buildx, then runs the build inside that container.
+- **Windows:** the pinned guide describes Windows 11 setup with Visual Studio and supporting tools; its setup script provisions Git, Python, 7-Zip, q, and other dependencies. Its default prepared-source path targets x64; ARM64 uses the Chromium clone path.
+
+The minimum supported release OS versions and distro matrix still need explicit product decisions; build documentation prerequisites are not themselves a support policy. See [the verified Helium engine baseline](../third-party/helium-engine-baseline.md).
+
 ### Ardia
 
 Ardia is now more useful to cross-platform research than the November brief's earlier macOS-only summary suggests, but its docs must be read with their status qualifiers:
