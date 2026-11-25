@@ -45,7 +45,7 @@ python scripts/validate_foundation.py
 
 1. **L0 — Engine:** pinned Chromium source built through a compatible Helium patch/tooling set and the matching platform packaging repositories.
 2. **L1 — Privacy and hardening:** de-Googling, content blocking, filter lists and privacy flags.
-3. **L2 — Browser core:** Spaces, storage isolation, omnibox, URL rules and tab lifecycle.
+3. **L2 — Browser core:** Spaces, storage isolation, omnibox, URL rules and tab lifecycle. A first pure URL-cleaner helper is in `packages/core/url-cleaner.mjs`; it is not yet wired to Chromium navigation (see [the core contract](docs/core/url-cleaner.md)).
 4. **L3 — Shell and interface:** a Nocturne-owned shared Chromium WebUI candidate, with narrow OS adapters.
 5. **L4 — Features and services:** importers, updates and command actions.
 6. **L5 — Internal pages:** start page, settings, Insights and onboarding.
@@ -84,6 +84,7 @@ No second rendering engine, mandatory AI, vendor-operated cloud sync or mobile a
 .github/workflows/       Foundation + prototype checks
 prototype/                Dependency-free visual/interaction prototype
 scripts/                   Local serving and repository validation
+packages/core/             Dependency-free browser-core helpers
 tests/                     Node tests for pure browser-core helpers
 docs/audits/              Dated upstream/source audit
  docs/decisions/          Architecture decision records
