@@ -47,6 +47,10 @@ cd /absolute/path/nocturne-engine/macos
 
 Expected output is a `.dmg` under `build/`. Signing/notarization credentials are not required for an unsigned local verification build; do not add Apple credentials to repository secrets for this initial run.
 
+## Optional GitHub Actions execution
+
+The repository now has a **manual-only** `Native engine build (manual, self-hosted)` workflow. It never runs on pushes or pull requests. To use it, register one self-hosted runner per platform with the labels used in the workflow (`nocturne-engine` plus the OS/architecture labels), provision the upstream toolchains and required free disk, and dispatch the workflow for that runner's platform. The runner must be trusted and dedicated to this repository; the workflow executes upstream build scripts and can consume substantial disk, memory and time. It uploads build logs and selected package outputs for seven days. It does not install the browser or mark a build record succeeded automatically; complete the clean-profile runtime smoke test and evidence record separately.
+
 ## Required evidence
 
 For each platform:
