@@ -56,7 +56,8 @@ function normalizeTabs(value = []) {
     const url = normalizeText(source.url, "Tab URL", 8192);
     const sleeping = source.sleeping ?? false;
     if (typeof sleeping !== "boolean") throw new TypeError("Tab sleeping flag must be boolean");
-    return Object.freeze({ id, title, url, sleeping });
+    const folderId = source.folderId == null ? null : normalizeId(source.folderId, "Tab folder id");
+    return Object.freeze({ id, title, url, sleeping, folderId });
   }));
 }
 

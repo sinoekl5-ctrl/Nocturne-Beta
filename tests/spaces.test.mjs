@@ -201,3 +201,19 @@ test("persistent snapshots include persistent Space collections but never privat
   assert.equal(snapshot.spaces.some((space) => space.id === "vigil-room"), false);
   assert.equal(JSON.stringify(snapshot).includes("private-tab"), false);
 });
+
+
+test("tabs retain their folder association within the owning Space", async () => {
+  const { addTabToSpace } = await import("../browser-core/spaces.mjs");
+  let registry = createSpaceRegistry({
+    spaces: [{
+      id: "atelier", name: "Atelier",
+      folders: [{ id: "today", name: "Today" }, { id: "reading", name: "Reading" }],
+    }],
+  });
+  registry = addTabToSpace(registry, "atelier", {
+    id: "book", title: "A book", url: "book.local", folderId: "reading",
+  });
+  const tab = registry.spaces[0].tabs[0];
+  assert.equal(tab.folderId, "reading");
+});

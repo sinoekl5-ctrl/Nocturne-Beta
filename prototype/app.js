@@ -1,6 +1,15 @@
 import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
 import { CLEAN_LINK_MODES } from "../browser-core/url-cleaner.mjs";
-import { CONTENT_BLOCKING_MODES, createSpaceRegistry, addSpace, activateSpace, updateSpace } from "../browser-core/spaces.mjs";
+import {
+  CONTENT_BLOCKING_MODES,
+  createSpaceRegistry,
+  addSpace,
+  activateSpace,
+  updateSpace,
+  addTabToSpace,
+  addPinToSpace,
+  addFolderToSpace,
+} from "../browser-core/spaces.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -9,11 +18,26 @@ const state = {
   mood: "atelier",
   spaceRegistry: createSpaceRegistry({
     spaces: [
-      { id: "atelier", name: "Atelier", mood: "atelier" },
-      { id: "gambit", name: "Gambit", mood: "gambit" },
-      { id: "vigil", name: "Vigil", mood: "vigil", private: true },
-      { id: "drift", name: "Drift", mood: "drift" },
-      { id: "ember", name: "Ember", mood: "ember" },
+      {
+        id: "atelier", name: "Atelier", mood: "atelier",
+        folders: [{ id: "today", name: "Today" }, { id: "reading", name: "Reading" }],
+        tabs: [
+          { id: "studio", title: "The quiet work of making", url: "studio.preview", folderId: "today" },
+          { id: "atlas", title: "Atlas of small ideas", url: "atlas.preview", folderId: "today" },
+          { id: "weather", title: "Weather & light", url: "weather.preview", folderId: "today", sleeping: true },
+          { id: "essay", title: "A room of one's own", url: "essay.preview", folderId: "reading" },
+        ],
+        pins: [
+          { id: "field-notes", title: "Field Notes", url: "notes.local" },
+          { id: "library", title: "Library", url: "library.local" },
+          { id: "studio-pin", title: "Studio", url: "studio.local" },
+          { id: "archive", title: "Archive", url: "archive.local" },
+        ],
+      },
+      { id: "gambit", name: "Gambit", mood: "gambit", folders: [{ id: "research", name: "Research" }] },
+      { id: "vigil", name: "Vigil", mood: "vigil", private: true, folders: [{ id: "private-session", name: "Private Session" }] },
+      { id: "drift", name: "Drift", mood: "drift", folders: [{ id: "media", name: "Media" }] },
+      { id: "ember", name: "Ember", mood: "ember", folders: [{ id: "saved", name: "Saved" }] },
     ],
     activeSpaceId: "atelier",
   }),
@@ -30,6 +54,7 @@ const state = {
   activeTab: "studio",
   activePane: 1,
   folders: { Today: true, Reading: true },
+  folderExpansion: { atelier: { today: true, reading: true } },
 };
 
 const moodCopy = {
@@ -67,6 +92,130 @@ function getActiveSpace() {
   return state.spaceRegistry.spaces.find((space) => space.id === state.spaceRegistry.activeSpaceId);
 }
 
+function renderSpaceCollections() {
+  const active = getActiveSpace();
+  if (!active) return;
+
+  const pinGrid = $("#pinGrid");
+  pinGrid.replaceChildren();
+  active.pins.forEach((item) => {
+    const pin = document.createElement("button");
+    pin.type = "button";
+    pin.className = "pin-tile";
+    pin.dataset.pinId = item.id;
+    pin.dataset.page = item.title;
+    pin.dataset.url = item.url;
+    const glyph = document.createElement("span");
+    glyph.className = "pin-glyph glyph-new";
+    glyph.textContent = "✳";
+    const label = document.createElement("span");
+    label.textContent = item.title;
+    pin.append(glyph, label);
+    pin.addEventListener("click", () => setPreviewPage(
+      item.title,
+      item.url,
+      "PINNED PLACE",
+      "A local preview for " + item.title + ". Website navigation is not connected.",
+    ));
+    pinGrid.append(pin);
+  });
+
+  const tabList = $("#tabList");
+  tabList.replaceChildren();
+  const expansion = state.folderExpansion[active.id] ?? {};
+  active.folders.forEach((folder, index) => {
+    const group = document.createElement("div");
+    group.className = "tab-group";
+    const folderTabs = active.tabs.filter((tab) =>
+      tab.folderId === folder.id || (tab.folderId == null && index === 0)
+    );
+
+    const header = document.createElement("button");
+    header.type = "button";
+    header.className = "folder-row";
+    header.dataset.folder = folder.id;
+    const isExpanded = expansion[folder.id] !== false;
+    header.setAttribute("aria-expanded", String(isExpanded));
+    const chevron = document.createElement("span");
+    chevron.className = "chevron";
+    chevron.textContent = isExpanded ? "⌄" : "›";
+    const name = document.createElement("span");
+    name.textContent = folder.name;
+    const count = document.createElement("span");
+    count.className = "folder-count";
+    count.textContent = String(folderTabs.length);
+    header.append(chevron, name, count);
+
+    const children = document.createElement("div");
+    children.className = "folder-children";
+    children.dataset.folderChildren = folder.id;
+    children.hidden = !isExpanded;
+
+    header.addEventListener("click", () => {
+      state.folderExpansion[active.id] ??= {};
+      const nextExpanded = !state.folderExpansion[active.id][folder.id] && state.folderExpansion[active.id][folder.id] !== undefined
+        ? true
+        : state.folderExpansion[active.id][folder.id] === undefined
+          ? false
+          : !state.folderExpansion[active.id][folder.id];
+      state.folderExpansion[active.id][folder.id] = nextExpanded;
+      header.setAttribute("aria-expanded", String(nextExpanded));
+      chevron.textContent = nextExpanded ? "⌄" : "›";
+      children.hidden = !nextExpanded;
+    });
+
+    folderTabs.forEach((tabData) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "tab-row";
+      row.dataset.tabId = tabData.id;
+      row.dataset.url = tabData.url;
+      const favicon = document.createElement("span");
+      favicon.className = "tab-favicon favicon-new";
+      favicon.textContent = tabData.title.slice(0, 1).toUpperCase();
+      const title = document.createElement("span");
+      title.className = "tab-title";
+      title.textContent = tabData.title;
+      row.append(favicon, title);
+      if (tabData.sleeping) {
+        const sleeping = document.createElement("span");
+        sleeping.className = "sleeping-mark";
+        sleeping.title = "Sleeping tab";
+        sleeping.textContent = "☾";
+        row.append(sleeping);
+      }
+      row.addEventListener("click", () => setActiveTab(tabData.id));
+      children.append(row);
+    });
+
+    group.append(header, children);
+    tabList.append(group);
+  });
+
+  const newTabRow = document.createElement("button");
+  newTabRow.type = "button";
+  newTabRow.className = "new-tab-row";
+  newTabRow.id = "newTab";
+  const plus = document.createElement("span");
+  plus.textContent = "＋";
+  const label = document.createElement("span");
+  label.textContent = "New tab";
+  const shortcut = document.createElement("kbd");
+  shortcut.textContent = "⌘ T";
+  newTabRow.append(plus, label, shortcut);
+  newTabRow.addEventListener("click", addTab);
+  tabList.append(newTabRow);
+
+  updateTabCounts();
+  if (active.tabs.some((tab) => tab.id === state.activeTab)) {
+    setActiveTab(state.activeTab);
+  } else if (active.tabs.length) {
+    setActiveTab(active.tabs[0].id);
+  } else {
+    state.activeTab = "";
+  }
+}
+
 function renderSpaceSwitcher() {
   const nav = $("#spaceSwitcher");
   nav.replaceChildren();
@@ -101,6 +250,8 @@ function setActiveSpace(spaceId) {
   state.private = nextSpace.private;
   root.dataset.mood = nextSpace.mood;
   renderSpaceSwitcher();
+  state.activeTab = nextSpace.tabs[0]?.id ?? "";
+  renderSpaceCollections();
 
   const mood = nextSpace.mood;
   $("#breadcrumbSpace").textContent = nextSpace.name;
@@ -392,6 +543,7 @@ function createSpaceFromPrompt() {
       mood: state.mood,
       private: false,
       contentBlocking: "balanced",
+      folders: [{ id: "today", name: "Today" }],
     });
     setActiveSpace(id);
     announce(`Space created: ${normalized}. Browser data isolation is not active in this preview.`);
@@ -427,36 +579,61 @@ function setContentBlockingMode(mode) {
   announce(`${active.name}: content blocking set to ${mode} in the preview model.`);
 }
 function addTab() {
-  const id = `tab-${Date.now()}`;
-  const label = `Untitled ${$$(".tab-row").length + 1}`;
-  const row = document.createElement("button");
-  row.className = "tab-row active";
-  row.dataset.tabId = id;
-  row.innerHTML = `<span class="tab-favicon favicon-new">·</span><span class="tab-title"></span>`;
-  $(".tab-title", row).textContent = label;
-  row.addEventListener("click", () => setActiveTab(id));
-  const target = $("[data-folder-children='Today']");
-  target.append(row);
+  const active = getActiveSpace();
+  if (!active) return;
+  let folder = active.folders[0];
+  if (!folder) {
+    state.spaceRegistry = addFolderToSpace(state.spaceRegistry, active.id, { id: "today", name: "Today" });
+    folder = getActiveSpace().folders[0];
+  }
+  const id = "tab-" + Date.now().toString(36);
+  const title = "Untitled " + (active.tabs.length + 1);
+  state.spaceRegistry = addTabToSpace(state.spaceRegistry, active.id, {
+    id,
+    title,
+    url: "newtab.local/" + id,
+    folderId: folder.id,
+  });
+  state.activeTab = id;
+  renderSpaceCollections();
   setActiveTab(id);
-  updateTabCounts();
-  announce("A new blank tab preview was added.");
+  announce("A new tab was added to " + active.name + ".");
 }
 
 function addPin() {
+  const active = getActiveSpace();
+  if (!active) return;
   const name = window.prompt("Name this pin");
   if (!name?.trim()) return;
-  const pin = document.createElement("button");
-  pin.className = "pin-tile";
-  pin.dataset.page = name.trim();
-  const glyph = document.createElement("span");
-  glyph.className = "pin-glyph glyph-new";
-  glyph.textContent = "✳";
-  const text = document.createElement("span");
-  text.textContent = name.trim();
-  pin.append(glyph, text);
-  pin.addEventListener("click", () => setPreviewPage(name.trim(), "pin.preview", "PINNED PLACE", "This is a pin placeholder in the visual prototype."));
-  $("#pinGrid").append(pin);
-  announce(`Pinned ${name.trim()}.`);
+  const title = name.trim();
+  const base = title.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/g, "") || "pin";
+  let id = base;
+  let suffix = 2;
+  while (active.pins.some((pin) => pin.id === id)) id = base + "-" + suffix++;
+  state.spaceRegistry = addPinToSpace(state.spaceRegistry, active.id, {
+    id,
+    title,
+    url: base + ".local",
+  });
+  renderSpaceCollections();
+  announce("Pinned " + title + " in " + active.name + ".");
+}
+
+function addFolder() {
+  const active = getActiveSpace();
+  if (!active) return;
+  const name = window.prompt("Name this folder");
+  if (!name?.trim()) return;
+  const title = name.trim();
+  const base = title.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/g, "") || "folder";
+  let id = base;
+  let suffix = 2;
+  while (active.folders.some((folder) => folder.id === id)) id = base + "-" + suffix++;
+  state.spaceRegistry = addFolderToSpace(state.spaceRegistry, active.id, { id, name: title });
+  state.folderExpansion[active.id] ??= {};
+  state.folderExpansion[active.id][id] = true;
+  renderSpaceCollections();
+  announce("Folder created in " + active.name + ".");
 }
 
 function updateTabCounts() {
@@ -485,8 +662,8 @@ $$(".tab-row").forEach((button) => button.addEventListener("click", () => setAct
 $$(".pin-tile").forEach((button) => button.addEventListener("click", () => setPreviewPage(button.dataset.page, button.dataset.url, "PINNED PLACE", `A local preview for ${button.dataset.page}.`)));
 
 $("#omniboxButton").addEventListener("click", openCommand);
-$("#newTab").addEventListener("click", addTab);
 $("#addPin").addEventListener("click", addPin);
+$("#addFolder").addEventListener("click", addFolder);
 $("#themeToggle").addEventListener("click", () => setTheme(state.theme === "night" ? "day" : "night"));
 $("#daySetting").addEventListener("click", () => setTheme(state.theme === "night" ? "day" : "night"));
 $("#splitToggle").addEventListener("click", () => setSplit(!state.split));
@@ -549,5 +726,6 @@ root.classList.toggle("no-texture", !state.texture);
 createSpaceState(state.mood); // Confirms the initial Space model is normalized by the shared core.
 $("#cleanLinksSetting").value = state.cleanLinksMode;
 renderSpaceSwitcher();
+renderSpaceCollections();
 $("#contentBlockingSetting").value = getActiveSpace().contentBlocking;
 updateTabCounts();
