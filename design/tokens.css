@@ -1,0 +1,113 @@
+/* Nocturne design tokens. Source of truth: design/tokens.json (kept in sync by tests/tokens.test.mjs).
+   Palette values are a first draft from section 9.5 of the project brief. */
+
+:root, [data-theme="night"] {
+  color-scheme: dark;
+
+  /* Palette (raw). Do not reassign these per mood; moods change --accent instead. */
+  --void: #0E0D0C;
+  --umber: #1B1814;
+  --study: #26221B;
+  --olive: #3A3828;
+  --slate: #4B5456;
+  --wind: #7F9A9C;
+  --mist: #9CA8AA;
+  --bone: #E2DACB;
+  --ember: #C98A2B;
+  --oxblood: #7A3B36;
+  --rose-ash: #C98F88;
+  --parchment: #B7A27C;
+
+  /* Semantic roles (Night) */
+  --bg: var(--void);
+  --surface: var(--umber);
+  --surface-raised: var(--study);
+  --border: var(--olive);
+  --disabled: var(--slate);
+  --text: var(--bone);
+  --text-muted: var(--mist);
+  --link: var(--wind);
+  --accent: var(--ember);
+  --on-accent: var(--void);
+  --danger-fill: var(--oxblood);
+  --on-danger: var(--bone);
+  --danger-text: var(--rose-ash);
+  --reading: var(--parchment);
+  --focus: var(--accent);
+
+  /* Shape */
+  --radius-panel: 10px;
+  --radius-page: 9px;
+  --radius-command: 10px;
+  --radius-peek: 14px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* Texture and light */
+  --grain: 0.04;
+  --vignette: 0.08;
+  --glow: 0.04;
+
+  /* Motion */
+  --dur-micro: 120ms;
+  --dur-std: 200ms;
+  --dur-large: 320ms;
+  --heartbeat: 1200ms;
+  --sweep-direction: 1;
+}
+
+[data-theme="day"] {
+  color-scheme: light;
+
+  --paper: #EFE9DC;
+  --page: #F6F2E8;
+  --linen: #E4DDCC;
+  --hairline: #CFC8B9;
+  --ink: #1F1C18;
+  --slate-ink: #4B5456;
+  --ember-dark: #8A5A12;
+  --oxblood: #7A3B36;
+
+  /* Semantic roles (Day). Mapping is a proposal; the brief defines only the palette. */
+  --bg: var(--paper);
+  --surface: var(--page);
+  --surface-raised: var(--linen);
+  --border: var(--hairline);
+  --text: var(--ink);
+  --text-muted: var(--slate-ink);
+  --link: var(--ember-dark);
+  --accent: var(--ember-dark);
+  --on-accent: var(--page);
+  --danger-fill: var(--oxblood);
+  --on-danger: var(--page);
+  --danger-text: var(--oxblood);
+  --reading: var(--page);
+}
+
+[data-contrast="high"] {
+  --ember: #E0A64A;
+  --grain: 0;
+  --vignette: 0;
+  --focus-ring-width: 3px;
+}
+
+/* Space moods. Moods change accent, grain and glow only; the palette stays constant. */
+[data-mood="atelier"] { --accent: var(--ember); --grain: 0.04; --glow: 0.04; }
+[data-mood="gambit"] { --accent: var(--parchment); --grain: 0.04; --glow: 0; }
+[data-mood="vigil"] { --accent: var(--bone); --grain: 0.01; --glow: 0; }
+[data-mood="drift"] { --accent: var(--wind); --grain: 0.025; --glow: 0.04; }
+[data-mood="ember"] { --accent: var(--ember); --grain: 0.025; --glow: 0.08; }
+
+/* A private Space is a security kind, not a mood: no grain and no glow whatever its mood. */
+[data-space-kind="private"] { --grain: 0; --glow: 0; }
+
+[dir="rtl"] { --sweep-direction: -1; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-micro: 100ms;
+    --dur-std: 100ms;
+    --dur-large: 100ms;
+    --heartbeat: 0ms;
+  }
+}
