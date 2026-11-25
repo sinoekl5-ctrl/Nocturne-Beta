@@ -26,7 +26,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Verify pinned sources
         run: python scripts/engine/checkout.py --platform Linux --workspace "$RUNNER_TEMP/nocturne-engine"
       - name: Build and package pinned Helium
@@ -58,7 +58,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Verify pinned sources
         shell: pwsh
         run: python scripts/engine/checkout.py --platform Windows --workspace "$env:RUNNER_TEMP\nocturne-engine"
@@ -97,7 +97,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Verify pinned sources
         run: python scripts/engine/checkout.py --platform macOS --workspace "$RUNNER_TEMP/nocturne-engine"
       - name: Build pinned Helium
