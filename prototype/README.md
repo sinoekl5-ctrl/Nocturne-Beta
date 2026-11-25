@@ -18,6 +18,7 @@ Open `http://127.0.0.1:4173`. No package installation or external font download 
 - Open the command bar with `Ctrl/Cmd + L`; it filters the sample tabs/actions, recognizes local preview addresses, and evaluates simple arithmetic without `eval`.
 - Toggle split view, reading mode, Day Study, high contrast, reduced motion, RTL mirroring, texture, and private-room presentation in Preferences.
 - Add a tab or pin and collapse the tab folders.
+- Choose a per-Space URL Cleaner mode (Disable / Suggest / Auto-clean). Suggest keeps the original preview selected until you explicitly accept the cleaned preview; Auto-clean changes only the local preview URL.
 
 ## Honest boundary
 
