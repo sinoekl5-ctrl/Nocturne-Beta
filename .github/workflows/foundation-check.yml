@@ -35,6 +35,8 @@ jobs:
         run: python scripts/validate_engine_pins.py
       - name: Run Python validator tests
         run: python -m unittest discover -s tests -p "test_*.py"
+      - name: Validate engine checkout plan (no network)
+        run: python scripts/engine/checkout.py --platform Linux --print-plan
       - name: Syntax-check prototype entrypoint
         run: node --check prototype/app.js
       - name: Test dependency-free browser core
