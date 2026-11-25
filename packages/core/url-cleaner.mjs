@@ -89,7 +89,7 @@ export function cleanTrackingUrl(input, options = {}) {
   const queryAt = beforeFragment.indexOf("?");
 
   if (queryAt === -1) return result(mode, originalUrl, originalUrl);
-  
+
   const prefix = beforeFragment.slice(0, queryAt);
   const rawQuery = beforeFragment.slice(queryAt + 1);
   const keptSegments = [];
