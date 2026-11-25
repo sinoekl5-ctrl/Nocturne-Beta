@@ -85,3 +85,11 @@ export function createSpaceState(mood = "atelier") {
   const safeMood = SPACE_MOODS.includes(mood) ? mood : "atelier";
   return { mood: safeMood, private: safeMood === "vigil", tabs: [], pins: [] };
 }
+
+/** Choose the neighboring tab after a close; prefer the tab to the right. */
+export function getFallbackTabId(tabIds, closedIndex) {
+  if (!Array.isArray(tabIds) || tabIds.length === 0) return null;
+  const index = Number.isInteger(closedIndex) ? closedIndex : -1;
+  if (index < 0 || index >= tabIds.length) return tabIds[0] ?? null;
+  return tabIds[index + 1] ?? tabIds[index - 1] ?? null;
+}

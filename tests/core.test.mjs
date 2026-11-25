@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildSuggestions, calculateExpression, createSpaceState, isLikelyAddress } from "../prototype/core.mjs";
+import { buildSuggestions, calculateExpression, createSpaceState, getFallbackTabId, isLikelyAddress } from "../prototype/core.mjs";
 
 const items = [
   { id: "studio", title: "The quiet work of making", subtitle: "studio.preview", kind: "tab" },
@@ -31,4 +31,16 @@ test("command suggestions produce calculator, address and local matches", () => 
 test("Space model normalizes unknown mood and makes Vigil private", () => {
   assert.deepEqual(createSpaceState("unknown"), { mood: "atelier", private: false, tabs: [], pins: [] });
   assert.equal(createSpaceState("vigil").private, true);
+});
+
+
+test("closing a tab prefers its right neighbor, then the left", () => {
+  assert.equal(getFallbackTabId(["a", "b", "c"], 1), "c");
+  assert.equal(getFallbackTabId(["a", "b", "c"], 2), "b");
+});
+
+test("tab fallback safely handles empty or invalid selection", () => {
+  assert.equal(getFallbackTabId([], 0), null);
+  assert.equal(getFallbackTabId(["a", "b"], -1), "a");
+  assert.equal(getFallbackTabId(["a", "b"], 8), "a");
 });

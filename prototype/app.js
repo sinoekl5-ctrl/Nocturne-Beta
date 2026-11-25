@@ -1,4 +1,4 @@
-import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
+import { buildSuggestions, createSpaceState, getFallbackTabId, SPACE_MOODS } from "./core.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -35,6 +35,7 @@ const commandItems = [
   { id: "settings", title: "Open preferences", subtitle: "Change appearance, motion, and layout", kind: "action", action: "settings", reason: "Action" },
   { id: "spaces", title: "Change Space", subtitle: "Atelier, Gambit, Vigil, Drift, Ember", kind: "action", action: "spaces", reason: "Action" },
   { id: "split", title: "Toggle split view", subtitle: "Show two pages side by side", kind: "action", action: "split", reason: "Action" },
+  { id: "close-tab", title: "Close current tab", subtitle: "Close the selected tab · Ctrl/⌘ W", kind: "action", action: "close-tab", reason: "Action" },
   { id: "private", title: "Enter private room", subtitle: "Temporary session concept", kind: "action", action: "private", reason: "Action" },
 ];
 
@@ -273,6 +274,7 @@ function chooseSuggestion(index = selectedSuggestion) {
   } else if (item.kind === "action") {
     if (item.action === "settings") openSettings();
     if (item.action === "split") setSplit(!state.split);
+    if (item.action === "close-tab") closeActiveTab();
     if (item.action === "private") togglePrivate();
     if (item.action === "spaces") announce("Choose a Space from the bottom of the sidebar.");
   } else {
@@ -300,6 +302,24 @@ function setActiveTab(tabId) {
   $("#articleKicker").textContent = "LOCAL TAB PREVIEW";
   $("#articleDeck").textContent = "A static tab selection to demonstrate the sidebar and navigation states. Website contents will be supplied by Chromium in the real browser.";
   $("#pageUrl").textContent = `${tabId}.preview`;
+}
+
+function closeActiveTab() {
+  const rows = $$(".tab-row");
+  const activeIndex = rows.findIndex((row) => row.dataset.tabId === state.activeTab);
+  if (activeIndex < 0) return false;
+  const closed = rows[activeIndex];
+  const ids = rows.map((row) => row.dataset.tabId);
+  const fallbackId = getFallbackTabId(ids, activeIndex);
+  closed.remove();
+  if (fallbackId) {
+    setActiveTab(fallbackId);
+  } else {
+    addTab();
+  }
+  updateTabCounts();
+  announce("Tab closed.");
+  return true;
 }
 
 function togglePrivate() {
@@ -420,7 +440,8 @@ $("#settingsDialog").addEventListener("click", (event) => {
 document.addEventListener("keydown", (event) => {
   const platformModifier = event.metaKey || event.ctrlKey;
   if (platformModifier && event.key.toLowerCase() === "l") { event.preventDefault(); openCommand(); }
-  if (platformModifier && event.key.toLowerCase() === "t" && !$("#commandDialog").open) { event.preventDefault(); addTab(); }
+  if (platformModifier && event.key.toLowerCase() === "t" && !$("#commandDialog").open && !$("#settingsDialog").open) { event.preventDefault(); addTab(); }
+  if (platformModifier && event.key.toLowerCase() === "w" && !$("#commandDialog").open && !$("#settingsDialog").open) { event.preventDefault(); closeActiveTab(); }
   if (event.key === "Escape") {
     if ($("#commandDialog").open) closeDialog("commandDialog");
     if ($("#settingsDialog").open) closeDialog("settingsDialog");
