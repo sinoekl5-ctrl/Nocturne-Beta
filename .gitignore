@@ -1,0 +1,30 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Generic builds
+node_modules/
+dist/
+build/
+coverage/
+*.log
+
+# Chromium/native builds and caches
+out/
+**/out/
+.cache/
+.ccache/
+
+# Local upstream study workspace
+/upstream-study/

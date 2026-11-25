@@ -1,0 +1,25 @@
+name: Foundation checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  foundation-check:
+    name: Validate Phase 0 foundation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Validate required files, license, and provenance template
+        run: python scripts/validate_foundation.py
