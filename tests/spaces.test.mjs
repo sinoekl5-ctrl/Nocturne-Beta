@@ -240,3 +240,24 @@ test("Private Spaces reject history and private entries never appear in snapshot
   }), /do not retain/i);
   assert.equal(JSON.stringify(toPersistedSpaceSnapshot(registry)).includes("private-room"), false);
 });
+
+
+test("Space active-tab transitions record one active tab and its activity time", async () => {
+  const { setActiveTabInSpace } = await import("../browser-core/spaces.mjs");
+  let registry = createSpaceRegistry({
+    spaces: [{
+      id: "atelier",
+      name: "Atelier",
+      tabs: [
+        { id: "one", title: "One", url: "one.local" },
+        { id: "two", title: "Two", url: "two.local" },
+      ],
+    }],
+  });
+  registry = setActiveTabInSpace(registry, "atelier", "two", 123456);
+  const tabs = registry.spaces[0].tabs;
+  assert.equal(tabs.find((tab) => tab.id === "two").active, true);
+  assert.equal(tabs.find((tab) => tab.id === "two").lastActiveAt, 123456);
+  assert.equal(tabs.find((tab) => tab.id === "one").active, false);
+  assert.throws(() => setActiveTabInSpace(registry, "atelier", "missing", 123456), /Unknown tab/);
+});

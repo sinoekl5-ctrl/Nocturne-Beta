@@ -57,7 +57,18 @@ function normalizeTabs(value = []) {
     const sleeping = source.sleeping ?? false;
     if (typeof sleeping !== "boolean") throw new TypeError("Tab sleeping flag must be boolean");
     const folderId = source.folderId == null ? null : normalizeId(source.folderId, "Tab folder id");
-    return Object.freeze({ id, title, url, sleeping, folderId });
+    const flags = ["active", "pinned", "keepLoaded", "audible", "playingMedia", "beforeUnload"];
+    const normalizedFlags = {};
+    for (const flag of flags) {
+      const value = source[flag] ?? false;
+      if (typeof value !== "boolean") throw new TypeError("Tab " + flag + " flag must be boolean");
+      normalizedFlags[flag] = value;
+    }
+    const lastActiveAt = source.lastActiveAt ?? null;
+    if (lastActiveAt !== null && (typeof lastActiveAt !== "number" || !Number.isFinite(lastActiveAt))) {
+      throw new TypeError("Tab lastActiveAt must be a finite number or null");
+    }
+    return Object.freeze({ id, title, url, sleeping, folderId, ...normalizedFlags, lastActiveAt });
   }));
 }
 
@@ -282,6 +293,24 @@ export function clearSpaceHistory(registry, spaceId) {
   const space = registry.spaces.find((item) => item.id === spaceId);
   if (!space) throw new RangeError("Unknown Space: " + spaceId);
   return replaceSpace(registry, spaceId, { history: [] });
+}
+
+export function setActiveTabInSpace(registry, spaceId, tabId, activeAt = Date.now()) {
+  requireRegistry(registry);
+  if (typeof activeAt !== "number" || !Number.isFinite(activeAt) || activeAt < 0) {
+    throw new RangeError("Active timestamp must be a finite non-negative number");
+  }
+  const space = registry.spaces.find((item) => item.id === spaceId);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
+  if (!space.tabs.some((tab) => tab.id === tabId)) {
+    throw new RangeError("Unknown tab in Space: " + tabId);
+  }
+  const tabs = space.tabs.map((tab) => ({
+    ...tab,
+    active: tab.id === tabId,
+    lastActiveAt: tab.id === tabId ? activeAt : tab.lastActiveAt,
+  }));
+  return replaceSpace(registry, spaceId, { tabs });
 }
 
 export function removeTabFromSpace(registry, spaceId, tabId) {

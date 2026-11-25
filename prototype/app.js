@@ -9,6 +9,7 @@ import {
   addTabToSpace,
   addPinToSpace,
   addFolderToSpace,
+  setActiveTabInSpace,
 } from "../browser-core/spaces.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -540,6 +541,10 @@ function setActiveTab(tabId) {
   const tab = $(`[data-tab-id="${CSS.escape(tabId)}"]`);
   if (!tab) return;
   state.activeTab = tabId;
+  const activeSpace = getActiveSpace();
+  if (activeSpace?.tabs.some((item) => item.id === tabId)) {
+    state.spaceRegistry = setActiveTabInSpace(state.spaceRegistry, activeSpace.id, tabId, Date.now());
+  }
   $$(".tab-row").forEach((row) => row.classList.toggle("active", row.dataset.tabId === tabId));
   const title = $(".tab-title", tab).textContent;
   $("#breadcrumbPage").textContent = title;
