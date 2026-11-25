@@ -17,6 +17,7 @@ const state = {
   activeTab: "studio",
   activePane: 1,
   secondPanePage: 0,
+  splitRatio: 50,
   folders: { Today: true, Reading: true },
 };
 
@@ -195,15 +196,31 @@ function focusPane(number) {
   $("#focusSecondPane").setAttribute("aria-pressed", String(number === 2));
   announce(number === 1 ? "First preview pane focused." : "Second preview pane focused.");
 }
+function setSplitRatio(value) {
+  const ratio = Math.round(Math.max(25, Math.min(75, Number(value) || 50)));
+  state.splitRatio = ratio;
+  const grid = $("#pageContentGrid");
+  grid.style.setProperty("--split-first-pane", `calc(${ratio}% - 4px)`);
+  grid.style.setProperty("--split-second-pane", `calc(${100 - ratio}% - 4px)`);
+  const divider = $("#splitDivider");
+  divider.setAttribute("aria-valuenow", String(ratio));
+  divider.setAttribute("aria-valuetext", `First pane ${ratio}%, second pane ${100 - ratio}%`);
+}
+function resizeSplitFromPointer(event) {
+  const bounds = $("#pageContentGrid").getBoundingClientRect();
+  if (!bounds.width) return;
+  const logicalOffset = state.rtl ? bounds.right - event.clientX : event.clientX - bounds.left;
+  setSplitRatio((logicalOffset / bounds.width) * 100);
+}
 function setSplit(enabled) {
   state.split = Boolean(enabled);
   $("#secondPane").hidden = !state.split;
-  $("#splitDivider").classList.toggle("visible", state.split);
+  $("#splitDivider").hidden = !state.split;
   $("#splitToggle").classList.toggle("is-active", state.split);
   $("#splitToggle").setAttribute("aria-pressed", String(state.split));
   $("#pageContentGrid").classList.toggle("split-active", state.split);
   $("#focusFirstPane").hidden = !state.split;
-  if (state.split) { renderSecondPanePage(); focusPane(state.activePane === 2 ? 2 : 1); }
+  if (state.split) { renderSecondPanePage(); setSplitRatio(state.splitRatio); focusPane(state.activePane === 2 ? 2 : 1); }
   else { state.activePane = 1; $("#pageStage").dataset.activePane = "1"; $("#webPage").classList.remove("pane-focused"); $("#secondPane").classList.remove("pane-focused"); $("#focusFirstPane").setAttribute("aria-pressed", "true"); $("#focusSecondPane").setAttribute("aria-pressed", "false"); }
   announce(state.split ? "Split view preview opened. Both panes are local samples." : "Split view closed.");
 }
@@ -423,6 +440,36 @@ $("#splitToggle").addEventListener("click", () => setSplit(!state.split));
 $("#focusFirstPane").addEventListener("click", () => focusPane(1));
 $("#focusSecondPane").addEventListener("click", () => focusPane(2));
 $("#nextSecondPane").addEventListener("click", () => { renderSecondPanePage(state.secondPanePage + 1); focusPane(2); });
+const splitDivider = $("#splitDivider");
+splitDivider.addEventListener("pointerdown", (event) => {
+  if (!state.split || event.button !== 0) return;
+  event.preventDefault();
+  splitDivider.setPointerCapture(event.pointerId);
+  splitDivider.dataset.dragging = "true";
+  resizeSplitFromPointer(event);
+});
+splitDivider.addEventListener("pointermove", (event) => {
+  if (splitDivider.hasPointerCapture(event.pointerId)) resizeSplitFromPointer(event);
+});
+function finishSplitDrag(event) {
+  if (splitDivider.hasPointerCapture(event.pointerId)) splitDivider.releasePointerCapture(event.pointerId);
+  delete splitDivider.dataset.dragging;
+}
+splitDivider.addEventListener("pointerup", finishSplitDrag);
+splitDivider.addEventListener("pointercancel", finishSplitDrag);
+splitDivider.addEventListener("lostpointercapture", () => { delete splitDivider.dataset.dragging; });
+splitDivider.addEventListener("keydown", (event) => {
+  let nextRatio = state.splitRatio;
+  const step = event.shiftKey ? 10 : 5;
+  if (event.key === "ArrowLeft") nextRatio += state.rtl ? step : -step;
+  else if (event.key === "ArrowRight") nextRatio += state.rtl ? -step : step;
+  else if (event.key === "Home") nextRatio = 25;
+  else if (event.key === "End") nextRatio = 75;
+  else return;
+  event.preventDefault();
+  setSplitRatio(nextRatio);
+  announce(`Split view resized: first pane ${state.splitRatio}%, second pane ${100 - state.splitRatio}%.`);
+});
 $("#closeSplit").addEventListener("click", () => setSplit(false));
 $("#readingToggle").addEventListener("click", () => setReading(!state.reading));
 $("#privateToggle").addEventListener("click", togglePrivate);
