@@ -1,0 +1,15 @@
+/* Adapter between design/tokens.css and the prototype's legacy chrome names.
+   Palette and mood values are sourced from the token sheet, not duplicated here. */
+:root {
+  --window-bg: var(--bg);
+  --chrome-bg: var(--surface);
+  --chrome-raised: var(--surface-raised);
+  --chrome-text: var(--text);
+  --chrome-muted: var(--text-muted);
+  --line: var(--border);
+  --grain-opacity: var(--grain);
+  --glow-opacity: var(--glow);
+  --dur-standard: var(--dur-std);
+}
+
+/* The article is sample content, so its paper colors remain independent. */

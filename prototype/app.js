@@ -55,6 +55,7 @@ function setMood(mood) {
   state.mood = mood;
   state.private = mood === "vigil";
   root.dataset.mood = mood;
+  root.dataset.spaceKind = state.private ? "private" : "regular";
   $$(".space-chip").forEach((button) => {
     const selected = button.dataset.mood === mood;
     button.classList.toggle("selected", selected);
@@ -83,6 +84,7 @@ function setTheme(theme) {
 function setHighContrast(enabled) {
   state.highContrast = Boolean(enabled);
   root.classList.toggle("high-contrast", state.highContrast);
+  root.dataset.contrast = state.highContrast ? "high" : "normal";
   $("#contrastSetting").setAttribute("aria-checked", String(state.highContrast));
 }
 
