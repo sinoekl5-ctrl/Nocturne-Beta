@@ -10,9 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = (
     "README.md", "LICENSE", "NOTICE", "CONTRIBUTING.md", "SECURITY.md",
     "package.json", "prototype/index.html", "prototype/styles.css", "prototype/app.js",
-    "prototype/core.mjs", "scripts/serve.mjs", "tests/core.test.mjs",
-    "tests/url-cleaner.test.mjs", "browser-core/url-cleaner.mjs",
-    "docs/features/url-cleaner.md",
+    "prototype/core.mjs", "browser-core/spaces.mjs", "scripts/serve.mjs",
+    "tests/core.test.mjs", "tests/spaces.test.mjs", "tests/url-cleaner.test.mjs",
+    "browser-core/url-cleaner.mjs", "docs/features/spaces.md", "docs/features/url-cleaner.md",
     "docs/architecture.md", "docs/implementation-plan.md", "docs/phase-0-checklist.md",
     "docs/decisions/0001-platforms-and-build-direction.md",
     "docs/decisions/0002-license-and-third-party-material.md",
