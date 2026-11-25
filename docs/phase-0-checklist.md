@@ -18,7 +18,8 @@
 - [x] Inspect Phi open-source build, Crest architecture/trademark policy, Ardia Linux/Windows/build/cross-platform docs, and urlshortener-ui design guide.
 - [x] Record first-pass Adopt / Port / Specify / Skip decisions and the cross-platform WebUI hypothesis.
 - [ ] Clone and reproduce the selected upstream engine build on representative Windows, Linux and macOS machines.
-- [ ] Verify exact compatible Chromium/Helium/platform-package pin set and minimum OS versions.
+- [x] Verify the pinned macOS/Linux/Windows packaging repos share the same Helium helium-chromium gitlink (41a32da3ed31e0c4a550b7f317f5ab095deee1c9; Chromium 158.0.8127.88). This proves source-pin alignment only.
+- [ ] Reproduce the aligned engine build and set minimum supported OS versions.
 - [ ] Produce a machine-generated SBOM from the chosen, pinned source/dependency set before distributing binaries.
 - [ ] Complete legal review of GPL-3.0 and any mixed file-level licenses before distributing builds.
 
