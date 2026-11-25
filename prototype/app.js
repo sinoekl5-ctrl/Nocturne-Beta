@@ -1,11 +1,22 @@
 import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
 import { CLEAN_LINK_MODES } from "../browser-core/url-cleaner.mjs";
+import { CONTENT_BLOCKING_MODES, createSpaceRegistry, addSpace, activateSpace, updateSpace } from "../browser-core/spaces.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const root = document.documentElement;
 const state = {
   mood: "atelier",
+  spaceRegistry: createSpaceRegistry({
+    spaces: [
+      { id: "atelier", name: "Atelier", mood: "atelier" },
+      { id: "gambit", name: "Gambit", mood: "gambit" },
+      { id: "vigil", name: "Vigil", mood: "vigil", private: true },
+      { id: "drift", name: "Drift", mood: "drift" },
+      { id: "ember", name: "Ember", mood: "ember" },
+    ],
+    activeSpaceId: "atelier",
+  }),
   theme: "night",
   cleanLinksMode: "suggest",
   highContrast: false,
@@ -52,26 +63,64 @@ function announce(message) {
   toastTimer = window.setTimeout(() => toast.classList.remove("visible"), 3400);
 }
 
-function setMood(mood) {
-  if (!SPACE_MOODS.includes(mood)) return;
-  state.mood = mood;
-  state.private = mood === "vigil";
-  root.dataset.mood = mood;
-  $$(".space-chip").forEach((button) => {
-    const selected = button.dataset.mood === mood;
-    button.classList.toggle("selected", selected);
-    button.setAttribute("aria-pressed", String(selected));
+function getActiveSpace() {
+  return state.spaceRegistry.spaces.find((space) => space.id === state.spaceRegistry.activeSpaceId);
+}
+
+function renderSpaceSwitcher() {
+  const nav = $("#spaceSwitcher");
+  nav.replaceChildren();
+  state.spaceRegistry.spaces.forEach((space, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `space-chip${space.id === state.spaceRegistry.activeSpaceId ? " selected" : ""}`;
+    button.dataset.spaceId = space.id;
+    button.dataset.mood = space.mood;
+    button.setAttribute("aria-pressed", String(space.id === state.spaceRegistry.activeSpaceId));
+
+    const dot = document.createElement("span");
+    dot.className = `space-dot dot-${space.mood}`;
+    const label = document.createElement("span");
+    label.textContent = space.name;
+    button.append(dot, label);
+
+    const shortcut = document.createElement("span");
+    shortcut.className = "space-shortcut";
+    shortcut.textContent = index < 5 ? String(index + 1) : "";
+    button.append(shortcut);
+    button.addEventListener("click", () => setActiveSpace(space.id));
+    nav.append(button);
   });
-  $("#breadcrumbSpace").textContent = moodCopy[mood].label;
+}
+
+function setActiveSpace(spaceId) {
+  const nextSpace = state.spaceRegistry.spaces.find((space) => space.id === spaceId);
+  if (!nextSpace) return;
+  state.spaceRegistry = activateSpace(state.spaceRegistry, spaceId);
+  state.mood = nextSpace.mood;
+  state.private = nextSpace.private;
+  root.dataset.mood = nextSpace.mood;
+  renderSpaceSwitcher();
+
+  const mood = nextSpace.mood;
+  $("#breadcrumbSpace").textContent = nextSpace.name;
   $("#articleKicker").textContent = moodCopy[mood].overline;
   $("#articleTitle").innerHTML = `${escapeHtml(moodCopy[mood].title)}<br><em>${mood === "atelier" ? "of making" : mood === "gambit" ? "worth keeping" : mood === "vigil" ? "for yourself" : mood === "drift" ? "without hurry" : "close by"}</em>`;
   $("#articleDeck").textContent = moodCopy[mood].subtitle;
   $("#statusMood").textContent = `${mood.toUpperCase()} / ${state.theme.toUpperCase()}`;
-  $("#pageUrl").textContent = `nocturne.preview / ${mood}`;
+  $("#pageUrl").textContent = `nocturne.preview / ${nextSpace.id}`;
   $("#privateToggle").setAttribute("aria-pressed", String(state.private));
   $("#privateStatus").textContent = state.private ? "On" : "Off";
   $("#privateToggle").classList.toggle("private-on", state.private);
-  if (state.private) announce("Private room preview. This is not an isolated Chromium profile.");
+  $("#contentBlockingSetting").value = nextSpace.contentBlocking;
+
+  if (state.private) announce("Private room preview. Temporary storage is not enforced until Chromium profile isolation is implemented.");
+}
+
+function setMood(mood) {
+  if (!SPACE_MOODS.includes(mood)) return;
+  const matching = state.spaceRegistry.spaces.find((space) => space.mood === mood);
+  if (matching) setActiveSpace(matching.id);
 }
 
 function setTheme(theme) {
@@ -117,7 +166,8 @@ function setLanguage(language) {
     mirror: "عكس موضع الشريط الجانبي", mirrorDesc: "مفيد للقراءة من اليمين إلى اليسار.",
     texture: "الملمس", textureDesc: "حبيبات خفيفة على واجهة المتصفح فقط.",
     local: "معاينة محلية", localDesc: "هذا النموذج لا يفتح مواقع حقيقية ولا ينشئ ملفات تعريف معزولة.",
-    cleanLinks: "تنظيف الروابط", cleanLinksDesc: "اقترح إزالة معرّفات التتبع المعروفة من الروابط.", done: "تم",
+    cleanLinks: "تنظيف الروابط", cleanLinksDesc: "اقترح إزالة معرّفات التتبع المعروفة من الروابط.",
+    contentBlocking: "حظر المحتوى", contentBlockingDesc: "إعداد مستقل لهذه المساحة؛ الحظر الفعلي يتطلب محرك Chromium.", done: "تم",
     settingsTitle: "شكّل مساحتك.", settingsKicker: "نوكتورن / التفضيلات", commandPlaceholder: "ابحث في علامات التبويب أو اكتب أمرًا…", commandLabel: "ابحث أو أدخل أمرًا"
   } : {
     pins: "PINS", tabs: "TABS", today: "Today", reading: "Reading", newTab: "New tab",
@@ -131,7 +181,8 @@ function setLanguage(language) {
     mirror: "Mirror sidebar", mirrorDesc: "Useful for Arabic and right-to-left reading.",
     texture: "Texture", textureDesc: "Subtle grain on browser chrome only.",
     local: "Local preview", localDesc: "This prototype does not visit websites or create isolated browser profiles.",
-    cleanLinks: "Clean links", cleanLinksDesc: "Choose whether known tracking parameters are suggested or removed in this preview.", done: "Done",
+    cleanLinks: "Clean links", cleanLinksDesc: "Choose whether known tracking parameters are suggested or removed in this preview.",
+    contentBlocking: "Content blocking", contentBlockingDesc: "A per-Space preference; actual filtering requires the Chromium engine.", done: "Done",
     settingsTitle: "Shape the room.", settingsKicker: "NOCTURNE / PREFERENCES", commandPlaceholder: "Search tabs, pages, or enter a command…", commandLabel: "Search or enter a command"
   };
   $("#pinsHeading").textContent = labels.pins;
@@ -164,6 +215,8 @@ function setLanguage(language) {
   $("#localDescription").textContent = labels.localDesc;
   $("#cleanLinksLabel").textContent = labels.cleanLinks;
   $("#cleanLinksDescription").textContent = labels.cleanLinksDesc;
+  $("#contentBlockingLabel").textContent = labels.contentBlocking;
+  $("#contentBlockingDescription").textContent = labels.contentBlockingDesc;
   $("#doneSettings").textContent = labels.done;
   $("#settingsTitle").textContent = labels.settingsTitle;
   $("#settingsKicker").textContent = labels.settingsKicker;
@@ -318,7 +371,61 @@ function setActiveTab(tabId) {
   $("#pageUrl").textContent = `${tabId}.preview`;
 }
 
+function createSpaceFromPrompt() {
+  const name = window.prompt("Name this Space");
+  if (!name?.trim()) return;
+
+  const normalized = name.trim();
+  const base = normalized.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 44).replace(/-+$/g, "");
+  const prefix = base || "space";
+  let id = prefix;
+  let suffix = 2;
+  while (state.spaceRegistry.spaces.some((space) => space.id === id)) {
+    id = `${prefix}-${suffix++}`;
+  }
+
+  try {
+    state.spaceRegistry = addSpace(state.spaceRegistry, {
+      id,
+      name: normalized,
+      mood: state.mood,
+      private: false,
+      contentBlocking: "balanced",
+    });
+    setActiveSpace(id);
+    announce(`Space created: ${normalized}. Browser data isolation is not active in this preview.`);
+  } catch (error) {
+    announce(error instanceof Error ? error.message : "Could not create Space.");
+  }
+}
+
 function togglePrivate() {
+  const current = getActiveSpace();
+  if (current?.private) {
+    const persistent = state.spaceRegistry.spaces.find((space) => !space.private);
+    if (persistent) setActiveSpace(persistent.id);
+    announce("Private room preview closed. Real temporary-profile cleanup awaits Chromium integration.");
+    return;
+  }
+
+  const privateSpace = state.spaceRegistry.spaces.find((space) => space.private);
+  if (privateSpace) {
+    setActiveSpace(privateSpace.id);
+    announce("Private room preview enabled. Real temporary-profile isolation is not implemented yet.");
+  } else {
+    announce("No Private Space is configured.");
+  }
+}
+
+function setContentBlockingMode(mode) {
+  if (!CONTENT_BLOCKING_MODES.includes(mode)) return;
+  const active = getActiveSpace();
+  if (!active) return;
+  state.spaceRegistry = updateSpace(state.spaceRegistry, active.id, { contentBlocking: mode });
+  $("#contentBlockingSetting").value = mode;
+  announce(`${active.name}: content blocking set to ${mode} in the preview model.`);
+}
   state.private = !state.private;
   if (state.private) setMood("vigil");
   else {
@@ -402,8 +509,8 @@ $("#readingToggle").addEventListener("click", () => setReading(!state.reading));
 $("#privateToggle").addEventListener("click", togglePrivate);
 $("#settingsButton").addEventListener("click", openSettings);
 $("#settingsQuick").addEventListener("click", openSettings);
-$("#manageSpaces").addEventListener("click", () => announce("Five Space moods are available below."));
-$("#spaceDetails").addEventListener("click", () => announce(`${moodCopy[state.mood].label}: ${moodCopy[state.mood].subtitle}`));
+$("#manageSpaces").addEventListener("click", createSpaceFromPrompt);
+$("#spaceDetails").addEventListener("click", () => { const active = getActiveSpace(); announce(`${active.name} · ${active.contentBlocking} blocking · ${active.private ? "temporary" : "persistent"} preview`); });
 $("#sidebarMenu").addEventListener("click", () => announce("Sidebar docking controls will be connected to the desktop shell."));
 $("#pageMenu").addEventListener("click", () => announce("Page actions will be supplied by Chromium."));
 $("#copyAddress").addEventListener("click", async () => {
@@ -413,6 +520,7 @@ $("#copyAddress").addEventListener("click", async () => {
 });
 $("#doneSettings").addEventListener("click", () => closeDialog("settingsDialog"));
 $("#cleanLinksSetting").addEventListener("change", (event) => setCleanLinksMode(event.target.value));
+$("#contentBlockingSetting").addEventListener("change", (event) => setContentBlockingMode(event.target.value));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeDialog(button.dataset.close)));
 $("#commandInput").addEventListener("input", (event) => renderSuggestions(event.target.value));
 $("#commandInput").addEventListener("keydown", (event) => {
@@ -453,4 +561,6 @@ root.classList.toggle("reduced-motion", state.reducedMotion);
 root.classList.toggle("no-texture", !state.texture);
 createSpaceState(state.mood); // Confirms the initial Space model is normalized by the shared core.
 $("#cleanLinksSetting").value = state.cleanLinksMode;
+renderSpaceSwitcher();
+$("#contentBlockingSetting").value = getActiveSpace().contentBlocking;
 updateTabCounts();
