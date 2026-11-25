@@ -1,8 +1,23 @@
 import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
+import { cleanTrackingUrl, createUrlCleanerPreferences, getUrlCleanerMode, setUrlCleanerMode } from "../packages/core/url-cleaner.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const root = document.documentElement;
+const CLEANER_STORAGE_KEY = "nocturne.urlCleaner.preferences.v1";
+
+function loadCleanerPreferences() {
+  try {
+    const saved = window.localStorage.getItem(CLEANER_STORAGE_KEY);
+    return createUrlCleanerPreferences(saved ? JSON.parse(saved) : {});
+  } catch {
+    return createUrlCleanerPreferences();
+  }
+}
+
+let cleanerPreferences = loadCleanerPreferences();
+let pendingCleanerCandidate = null;
+
 const state = {
   mood: "atelier",
   theme: "night",
@@ -54,6 +69,8 @@ function setMood(mood) {
   if (!SPACE_MOODS.includes(mood)) return;
   state.mood = mood;
   state.private = mood === "vigil";
+  hideCleanerSuggestion();
+  syncCleanerModeControl();
   root.dataset.mood = mood;
   $$(".space-chip").forEach((button) => {
     const selected = button.dataset.mood === mood;
@@ -106,6 +123,8 @@ function setLanguage(language) {
   const labels = arabic ? {
     pins: "المثبتات", tabs: "علامات التبويب", today: "اليوم", reading: "للقراءة",
     newTab: "علامة تبويب جديدة", spaces: "المساحات", privateRoom: "مساحة خاصة",
+    cleaner: "تنظيف روابط التتبع", cleanerDesc: "اختر طريقة التعامل مع معاملات التتبع المعروفة في هذه المساحة.",
+    cleanerDisable: "إيقاف", cleanerSuggest: "اقتراح", cleanerAuto: "تنظيف تلقائي",
     preferences: "التفضيلات", search: "ابحث أو اكتب عنوانًا", status: "نموذج مرئي · لا توجد طلبات شبكة",
     phase: "المرحلة 2 · دراسة مرئية", appearance: "المظهر", layout: "التخطيط", privacy: "الخصوصية",
     day: "دراسة النهار", dayDesc: "ألوان ورقية دافئة لضوء النهار.", contrast: "تباين مرتفع",
@@ -119,6 +138,8 @@ function setLanguage(language) {
   } : {
     pins: "PINS", tabs: "TABS", today: "Today", reading: "Reading", newTab: "New tab",
     spaces: "SPACES", privateRoom: "Private room", preferences: "Preferences",
+    cleaner: "Clean tracking links", cleanerDesc: "Choose how this Space handles known tracking parameters.",
+    cleanerDisable: "Disabled", cleanerSuggest: "Suggest", cleanerAuto: "Auto-clean",
     search: "Search or enter an address", status: "Prototype state · no network requests",
     phase: "PHASE 2 · VISUAL STUDY", appearance: "APPEARANCE", layout: "LAYOUT", privacy: "PRIVACY",
     day: "Day Study", dayDesc: "A warm paper palette for daylight.", contrast: "High contrast",
@@ -158,6 +179,11 @@ function setLanguage(language) {
   $("#textureDescription").textContent = labels.textureDesc;
   $("#localLabel").textContent = labels.local;
   $("#localDescription").textContent = labels.localDesc;
+  $("#urlCleanerLabel").textContent = labels.cleaner;
+  $("#urlCleanerDescription").textContent = labels.cleanerDesc;
+  $("#urlCleanerMode option[value=disable]").textContent = labels.cleanerDisable;
+  $("#urlCleanerMode option[value=suggest]").textContent = labels.cleanerSuggest;
+  $("#urlCleanerMode option[value=auto]").textContent = labels.cleanerAuto;
   $("#doneSettings").textContent = labels.done;
   $("#settingsTitle").textContent = labels.settingsTitle;
   $("#settingsKicker").textContent = labels.settingsKicker;
@@ -269,7 +295,17 @@ function chooseSuggestion(index = selectedSuggestion) {
   if (item.kind === "calculator") {
     announce(`${item.subtitle} = ${item.value}`);
   } else if (item.kind === "address") {
-    setPreviewPage(item.value, item.value, "A page preview", "Address navigation is simulated here. Chromium navigation is not connected yet.");
+    const cleaner = cleanTrackingUrl(item.value, { mode: getUrlCleanerMode(cleanerPreferences, state.mood) });
+    if (cleaner.shouldSuggest) {
+      setPreviewPage(item.value, item.value, "CLEAN LINK SUGGESTION", "The local URL Cleaner found " + cleaner.removedParams.length + " known tracking parameter(s). The original address remains selected; no website was opened.");
+      showCleanerSuggestion(cleaner.candidateUrl, cleaner.removedParams);
+    } else if (cleaner.mode === "auto" && cleaner.changed) {
+      setPreviewPage(cleaner.navigationUrl, cleaner.navigationUrl, "CLEANED ADDRESS PREVIEW", "Removed " + cleaner.removedParams.length + " known tracking parameter(s). This changes only the local preview; Chromium navigation is not connected.");
+      announce("Local preview cleaned: removed " + cleaner.removedParams.length + " tracking parameter(s).");
+    } else {
+      setPreviewPage(item.value, item.value, "A page preview", "Address navigation is simulated here. Chromium navigation is not connected yet.");
+      if (cleaner.skippedReason === "signed-url") announce("URL Cleaner left a signed URL unchanged.");
+    }
   } else if (item.kind === "action") {
     if (item.action === "settings") openSettings();
     if (item.action === "split") setSplit(!state.split);
@@ -280,7 +316,48 @@ function chooseSuggestion(index = selectedSuggestion) {
   }
 }
 
+function setCleanerMode(mode) {
+  cleanerPreferences = setUrlCleanerMode(cleanerPreferences, state.mood, mode);
+  syncCleanerModeControl();
+  try {
+    window.localStorage.setItem(CLEANER_STORAGE_KEY, JSON.stringify(cleanerPreferences));
+  } catch {
+    announce(state.language === "ar" ? "تعذر حفظ التفضيل محليًا؛ سيظل التغيير لهذه الجلسة." : "Could not store the cleaner preference locally; it remains active for this session.");
+  }
+  announce(moodCopy[state.mood].label + " URL Cleaner: " + getUrlCleanerMode(cleanerPreferences, state.mood) + ". Stored locally for this prototype.");
+}
+
+function syncCleanerModeControl() {
+  const control = $("#urlCleanerMode");
+  if (control) control.value = getUrlCleanerMode(cleanerPreferences, state.mood);
+}
+
+function hideCleanerSuggestion() {
+  pendingCleanerCandidate = null;
+  const notice = $("#urlCleanerNotice");
+  if (notice) notice.hidden = true;
+}
+
+function showCleanerSuggestion(candidateUrl, removedParams) {
+  pendingCleanerCandidate = candidateUrl;
+  const arabic = state.language === "ar";
+  $("#urlCleanerNoticeTitle").textContent = arabic ? "رابط أنظف متاح" : "A cleaner link is available";
+  $("#urlCleanerNoticeText").textContent = arabic
+    ? "تم العثور على " + removedParams.length + " من معاملات التتبع المعروفة. سيظل الرابط الأصلي كما هو حتى تختار المعاينة المنظّفة."
+    : "Found " + removedParams.length + " known tracking parameter(s). The original address stays selected until you choose the cleaned preview.";
+  $("#openCleanedPreview").textContent = arabic ? "استخدم المعاينة المنظّفة" : "Use cleaned preview";
+  $("#keepOriginalAddress").textContent = arabic ? "احتفظ بالأصلي" : "Keep original";
+  $("#urlCleanerNotice").hidden = false;
+}
+
+function openCleanedPreview() {
+  if (!pendingCleanerCandidate) return;
+  const candidate = pendingCleanerCandidate;
+  setPreviewPage(candidate, candidate, "CLEANED ADDRESS PREVIEW", "This is a local preview of the cleaned address. No external website was opened.");
+}
+
 function setPreviewPage(title, url, kicker, deck) {
+  hideCleanerSuggestion();
   $("#articleTitle").innerHTML = `${escapeHtml(title)}<br><em>preview</em>`;
   $("#articleKicker").textContent = kicker.toUpperCase();
   $("#articleDeck").textContent = deck;
@@ -396,6 +473,12 @@ $("#copyAddress").addEventListener("click", async () => {
   catch { announce(value); }
 });
 $("#doneSettings").addEventListener("click", () => closeDialog("settingsDialog"));
+$("#urlCleanerMode").addEventListener("change", (event) => setCleanerMode(event.target.value));
+$("#openCleanedPreview").addEventListener("click", openCleanedPreview);
+$("#keepOriginalAddress").addEventListener("click", () => {
+  hideCleanerSuggestion();
+  announce(state.language === "ar" ? "تم الاحتفاظ بالرابط الأصلي." : "Original preview address kept.");
+});
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeDialog(button.dataset.close)));
 $("#commandInput").addEventListener("input", (event) => renderSuggestions(event.target.value));
 $("#commandInput").addEventListener("keydown", (event) => {
@@ -435,4 +518,5 @@ $("#motionSetting").setAttribute("aria-checked", String(state.reducedMotion));
 root.classList.toggle("reduced-motion", state.reducedMotion);
 root.classList.toggle("no-texture", !state.texture);
 createSpaceState(state.mood); // Confirms the initial Space model is normalized by the shared core.
+syncCleanerModeControl();
 updateTabCounts();
