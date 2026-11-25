@@ -67,6 +67,9 @@ The five candidate repositories have been inspected and pinned. The audit record
 - [Source audit, 25 November 2026](docs/audits/2026-11-25-source-audit.md)
 - [Immutable upstream pins](docs/third-party/upstream-pins.csv)
 - [Architecture](docs/architecture.md)
+- [Engine source lock and build readiness](docs/engine-build-readiness.md)
+- [Native engine build runbook](docs/native-engine-build-runbook.md)
+- [Manual native build workflow](.github/workflows/native-engine-build.yml)
 
 The audited Helium root pin names Chromium **158.0.8127.88**. Ardia's audited engine-build document uses Chromium **158.0.8127.36** with Helium **0.22.2**; those are not interchangeable pin sets. Nocturne must reproduce one coherent set before starting a browser build.
 
