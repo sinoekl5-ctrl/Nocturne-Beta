@@ -282,6 +282,22 @@ function chooseSuggestion(index = selectedSuggestion) {
   }
 }
 
+function openPeek() {
+  openDialog($("#peekDialog"));
+  announce("Peek opened. This is a local preview, not a live website.");
+}
+
+function openPeekInCurrentTab() {
+  closeDialog("peekDialog");
+  setPreviewPage("Atlas of small ideas", "atlas.preview", "PEEK / LOCAL PAGE", "A local illustrative page preview. Real link metadata and navigation will be connected in Chromium.");
+}
+
+function openPeekInNewTab() {
+  closeDialog("peekDialog");
+  addTab();
+  setPreviewPage("Atlas of small ideas", "atlas.preview", "PEEK / LOCAL PAGE", "A local illustrative page preview. Real link metadata and navigation will be connected in Chromium.");
+}
+
 function setPreviewPage(title, url, kicker, deck) {
   $("#articleTitle").innerHTML = `${escapeHtml(title)}<br><em>preview</em>`;
   $("#articleKicker").textContent = kicker.toUpperCase();
@@ -392,6 +408,10 @@ $("#manageSpaces").addEventListener("click", () => announce("Five Space moods ar
 $("#spaceDetails").addEventListener("click", () => announce(`${moodCopy[state.mood].label}: ${moodCopy[state.mood].subtitle}`));
 $("#sidebarMenu").addEventListener("click", () => announce("Sidebar docking controls will be connected to the desktop shell."));
 $("#pageMenu").addEventListener("click", () => announce("Page actions will be supplied by Chromium."));
+$("#peekButton").addEventListener("click", openPeek);
+$("#closePeek").addEventListener("click", () => closeDialog("peekDialog"));
+$("#peekOpenCurrent").addEventListener("click", openPeekInCurrentTab);
+$("#peekOpenNew").addEventListener("click", openPeekInNewTab);
 $("#copyAddress").addEventListener("click", async () => {
   const value = $("#pageUrl").textContent;
   try { await navigator.clipboard.writeText(value); announce("Preview address copied."); }
@@ -414,6 +434,9 @@ bindSwitch("textureSetting", setTexture);
 
 $("#commandDialog").addEventListener("click", (event) => {
   if (event.target === $("#commandDialog")) closeDialog("commandDialog");
+});
+$("#peekDialog").addEventListener("click", (event) => {
+  if (event.target === $("#peekDialog")) closeDialog("peekDialog");
 });
 $("#settingsDialog").addEventListener("click", (event) => {
   if (event.target === $("#settingsDialog")) closeDialog("settingsDialog");
