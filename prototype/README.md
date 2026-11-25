@@ -16,9 +16,9 @@ Open `http://127.0.0.1:4173`. No package installation or external font download 
 
 - Choose Atelier, Gambit, Vigil, Drift, or Ember in the Space switcher (keys `1`–`5`).
 - Open the command bar with `Ctrl/Cmd + L`; it filters the sample tabs/actions, recognizes local preview addresses, and evaluates simple arithmetic without `eval`.
-- Toggle split view, reading mode, Day Study, high contrast, reduced motion, RTL mirroring, texture, and private-room presentation in Preferences.
+- Toggle split view, reading mode, Day Study, high contrast, reduced motion, RTL mirroring, texture, private-room presentation, and Clean Links (Disable / Suggest / Auto-clean) in Preferences.
 - Add a tab or pin and collapse the tab folders.
 
 ## Honest boundary
 
-This is not a browser and does not load websites. It has no Chromium process, web contents, real profiles, cookie stores, history, extension support, downloads, or security boundary. The page area is a static sample document. “Private room” is a UI state only and must never be described as secure isolation. Local settings persistence is intentionally not implemented yet.
+This is not a browser and does not load websites. Clean Links affects only command-bar suggestions in this prototype; it is not connected to a Chromium navigation pipeline. It has no Chromium process, web contents, real profiles, cookie stores, history, extension support, downloads, or security boundary. The page area is a static sample document. “Private room” is a UI state only and must never be described as secure isolation. Local settings persistence is intentionally not implemented yet.

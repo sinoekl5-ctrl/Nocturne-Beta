@@ -1,3 +1,5 @@
+import { cleanLink } from "../browser-core/url-cleaner.mjs";
+
 const SAFE_MATH = /^[\d\s()+\-*/%.]+$/;
 
 /** Evaluate a deliberately small arithmetic grammar without eval(). */
@@ -59,7 +61,7 @@ export function isLikelyAddress(value) {
   return /^(https?:\/\/|localhost(?::\d+)?(?:\/.*)?$|[\w-]+\.(?:local|test|preview|com|org|net|io|dev|app|co)(?::\d+)?(?:\/.*)?$)/i.test(text);
 }
 
-export function buildSuggestions(query, items) {
+export function buildSuggestions(query, items, { cleanLinksMode = "suggest" } = {}) {
   const text = String(query ?? "").trim();
   if (!text) return items.slice(0, 6).map((item) => ({ ...item, reason: item.reason ?? "Recent" }));
 
@@ -69,7 +71,48 @@ export function buildSuggestions(query, items) {
   }
 
   if (isLikelyAddress(text)) {
-    return [{ id: "address", title: text, subtitle: "Open in the browser · simulated in this prototype", kind: "address", reason: "Address", value: text }];
+    const cleanResult = cleanLink(text, { mode: cleanLinksMode });
+    if (cleanResult.action === "suggested") {
+      return [
+        {
+          id: "clean-link",
+          title: "Open clean link",
+          subtitle: `Remove ${cleanResult.removedParameters.join(", ")} · preview only`,
+          kind: "clean-link",
+          reason: "Clean link",
+          value: cleanResult.cleanedUrl,
+          originalUrl: text,
+          removedParameters: cleanResult.removedParameters,
+        },
+        {
+          id: "original-address",
+          title: "Open original link",
+          subtitle: text,
+          kind: "address",
+          reason: "Original",
+          value: text,
+        },
+      ];
+    }
+    if (cleanResult.action === "cleaned") {
+      return [{
+        id: "address",
+        title: cleanResult.url,
+        subtitle: "Tracking parameters removed in this preview",
+        kind: "address",
+        reason: "Auto-clean",
+        value: cleanResult.url,
+        originalUrl: text,
+      }];
+    }
+    return [{
+      id: "address",
+      title: text,
+      subtitle: "Open in the browser · simulated in this prototype",
+      kind: "address",
+      reason: "Address",
+      value: text,
+    }];
   }
 
   const normalized = text.toLocaleLowerCase();

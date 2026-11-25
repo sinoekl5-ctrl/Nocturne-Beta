@@ -32,3 +32,20 @@ test("Space model normalizes unknown mood and makes Vigil private", () => {
   assert.deepEqual(createSpaceState("unknown"), { mood: "atelier", private: false, tabs: [], pins: [] });
   assert.equal(createSpaceState("vigil").private, true);
 });
+
+
+test("Clean Links modes feed the command bar without changing Suggest navigation", () => {
+  const url = "https://example.com/story?utm_source=mail&id=9";
+  const suggested = buildSuggestions(url, items, { cleanLinksMode: "suggest" });
+  assert.equal(suggested[0].kind, "clean-link");
+  assert.equal(suggested[0].value, "https://example.com/story?id=9");
+  assert.equal(suggested[1].kind, "address");
+  assert.equal(suggested[1].value, url);
+
+  const automatic = buildSuggestions(url, items, { cleanLinksMode: "auto-clean" });
+  assert.equal(automatic[0].kind, "address");
+  assert.equal(automatic[0].value, "https://example.com/story?id=9");
+
+  const disabled = buildSuggestions(url, items, { cleanLinksMode: "disable" });
+  assert.equal(disabled[0].value, url);
+});

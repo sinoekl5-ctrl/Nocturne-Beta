@@ -1,4 +1,5 @@
 import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
+import { CLEAN_LINK_MODES } from "../browser-core/url-cleaner.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -6,6 +7,7 @@ const root = document.documentElement;
 const state = {
   mood: "atelier",
   theme: "night",
+  cleanLinksMode: "suggest",
   highContrast: false,
   reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   rtl: false,
@@ -114,7 +116,8 @@ function setLanguage(language) {
     languageDesc: "معاينة التسميات العربية واتجاه الواجهة من اليمين إلى اليسار.",
     mirror: "عكس موضع الشريط الجانبي", mirrorDesc: "مفيد للقراءة من اليمين إلى اليسار.",
     texture: "الملمس", textureDesc: "حبيبات خفيفة على واجهة المتصفح فقط.",
-    local: "معاينة محلية", localDesc: "هذا النموذج لا يفتح مواقع حقيقية ولا ينشئ ملفات تعريف معزولة.", done: "تم",
+    local: "معاينة محلية", localDesc: "هذا النموذج لا يفتح مواقع حقيقية ولا ينشئ ملفات تعريف معزولة.",
+    cleanLinks: "تنظيف الروابط", cleanLinksDesc: "اقترح إزالة معرّفات التتبع المعروفة من الروابط.", done: "تم",
     settingsTitle: "شكّل مساحتك.", settingsKicker: "نوكتورن / التفضيلات", commandPlaceholder: "ابحث في علامات التبويب أو اكتب أمرًا…", commandLabel: "ابحث أو أدخل أمرًا"
   } : {
     pins: "PINS", tabs: "TABS", today: "Today", reading: "Reading", newTab: "New tab",
@@ -127,7 +130,8 @@ function setLanguage(language) {
     languageDesc: "Preview Arabic labels and right-to-left chrome.",
     mirror: "Mirror sidebar", mirrorDesc: "Useful for Arabic and right-to-left reading.",
     texture: "Texture", textureDesc: "Subtle grain on browser chrome only.",
-    local: "Local preview", localDesc: "This prototype does not visit websites or create isolated browser profiles.", done: "Done",
+    local: "Local preview", localDesc: "This prototype does not visit websites or create isolated browser profiles.",
+    cleanLinks: "Clean links", cleanLinksDesc: "Choose whether known tracking parameters are suggested or removed in this preview.", done: "Done",
     settingsTitle: "Shape the room.", settingsKicker: "NOCTURNE / PREFERENCES", commandPlaceholder: "Search tabs, pages, or enter a command…", commandLabel: "Search or enter a command"
   };
   $("#pinsHeading").textContent = labels.pins;
@@ -158,6 +162,8 @@ function setLanguage(language) {
   $("#textureDescription").textContent = labels.textureDesc;
   $("#localLabel").textContent = labels.local;
   $("#localDescription").textContent = labels.localDesc;
+  $("#cleanLinksLabel").textContent = labels.cleanLinks;
+  $("#cleanLinksDescription").textContent = labels.cleanLinksDesc;
   $("#doneSettings").textContent = labels.done;
   $("#settingsTitle").textContent = labels.settingsTitle;
   $("#settingsKicker").textContent = labels.settingsKicker;
@@ -192,6 +198,13 @@ function setReading(enabled) {
   announce(state.reading ? "Reading mode preview." : "Standard page view.");
 }
 
+function setCleanLinksMode(mode) {
+  state.cleanLinksMode = CLEAN_LINK_MODES.includes(mode) ? mode : "suggest";
+  $("#cleanLinksSetting").value = state.cleanLinksMode;
+  if ($("#commandDialog").open) renderSuggestions($("#commandInput").value);
+  announce(`Clean Links preview mode: ${state.cleanLinksMode}.`);
+}
+
 function openDialog(dialog) {
   if (!dialog.open) dialog.showModal();
 }
@@ -214,7 +227,7 @@ function openCommand() {
 }
 
 function renderSuggestions(query) {
-  suggestions = buildSuggestions(query, commandItems);
+  suggestions = buildSuggestions(query, commandItems, { cleanLinksMode: state.cleanLinksMode });
   selectedSuggestion = 0;
   const results = $("#commandResults");
   results.replaceChildren();
@@ -234,7 +247,7 @@ function renderSuggestions(query) {
     row.dataset.index = String(index);
     const glyph = document.createElement("span");
     glyph.className = `result-glyph result-${item.kind}`;
-    glyph.textContent = item.kind === "calculator" ? "=" : item.kind === "address" ? "↗" : item.kind === "action" ? "⌘" : "◦";
+    glyph.textContent = item.kind === "calculator" ? "=" : item.kind === "clean-link" ? "✓" : item.kind === "address" ? "↗" : item.kind === "action" ? "⌘" : "◦";
     const copy = document.createElement("span");
     copy.className = "result-copy";
     const title = document.createElement("strong");
@@ -268,8 +281,11 @@ function chooseSuggestion(index = selectedSuggestion) {
   closeDialog("commandDialog");
   if (item.kind === "calculator") {
     announce(`${item.subtitle} = ${item.value}`);
-  } else if (item.kind === "address") {
-    setPreviewPage(item.value, item.value, "A page preview", "Address navigation is simulated here. Chromium navigation is not connected yet.");
+  } else if (item.kind === "address" || item.kind === "clean-link") {
+    const cleanLinkDeck = item.kind === "clean-link"
+      ? `Clean-link suggestion preview. Removed: ${item.removedParameters.join(", ")}. No real website was opened.`
+      : "Address navigation is simulated here. Chromium navigation is not connected yet.";
+    setPreviewPage(item.value, item.value, item.kind === "clean-link" ? "CLEAN LINK PREVIEW" : "A PAGE PREVIEW", cleanLinkDeck);
   } else if (item.kind === "action") {
     if (item.action === "settings") openSettings();
     if (item.action === "split") setSplit(!state.split);
@@ -396,6 +412,7 @@ $("#copyAddress").addEventListener("click", async () => {
   catch { announce(value); }
 });
 $("#doneSettings").addEventListener("click", () => closeDialog("settingsDialog"));
+$("#cleanLinksSetting").addEventListener("change", (event) => setCleanLinksMode(event.target.value));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeDialog(button.dataset.close)));
 $("#commandInput").addEventListener("input", (event) => renderSuggestions(event.target.value));
 $("#commandInput").addEventListener("keydown", (event) => {
@@ -435,4 +452,5 @@ $("#motionSetting").setAttribute("aria-checked", String(state.reducedMotion));
 root.classList.toggle("reduced-motion", state.reducedMotion);
 root.classList.toggle("no-texture", !state.texture);
 createSpaceState(state.mood); // Confirms the initial Space model is normalized by the shared core.
+$("#cleanLinksSetting").value = state.cleanLinksMode;
 updateTabCounts();
