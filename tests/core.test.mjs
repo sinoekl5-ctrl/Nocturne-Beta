@@ -4,6 +4,7 @@ import { buildSuggestions, calculateExpression, createSpaceState, getAdjacentTab
 
 const items = [
   { id: "studio", title: "The quiet work of making", subtitle: "studio.preview", kind: "tab" },
+  { id: "new-tab", title: "New tab", subtitle: "Open a blank tab", kind: "action", action: "new-tab" },
   { id: "settings", title: "Open preferences", subtitle: "Change appearance", kind: "action" },
 ];
 
@@ -25,7 +26,8 @@ test("command suggestions produce calculator, address and local matches", () => 
   assert.equal(buildSuggestions("5*5", items)[0].value, "25");
   assert.equal(buildSuggestions("https://example.com", items)[0].kind, "address");
   assert.equal(buildSuggestions("preferences", items)[0].id, "settings");
-  assert.equal(buildSuggestions("", items).length, 2);
+  assert.equal(buildSuggestions("new tab", items)[0].action, "new-tab");
+  assert.equal(buildSuggestions("", items).length, 3);
 });
 
 test("Space model normalizes unknown mood and makes Vigil private", () => {

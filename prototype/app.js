@@ -32,6 +32,7 @@ const commandItems = [
   { id: "atlas", title: "Atlas of small ideas", subtitle: "atlas.preview", url: "atlas.preview", kind: "tab" },
   { id: "weather", title: "Weather & light", subtitle: "weather.preview · Sleeping", url: "weather.preview", kind: "tab" },
   { id: "essay", title: "A room of one's own", subtitle: "reading.preview", url: "reading.preview", kind: "tab" },
+  { id: "new-tab", title: "New tab", subtitle: "Open a blank tab · Ctrl/⌘ T", kind: "action", action: "new-tab", reason: "Action" },
   { id: "settings", title: "Open preferences", subtitle: "Change appearance, motion, and layout", kind: "action", action: "settings", reason: "Action" },
   { id: "spaces", title: "Change Space", subtitle: "Atelier, Gambit, Vigil, Drift, Ember", kind: "action", action: "spaces", reason: "Action" },
   { id: "split", title: "Toggle split view", subtitle: "Show two pages side by side", kind: "action", action: "split", reason: "Action" },
@@ -272,6 +273,7 @@ function chooseSuggestion(index = selectedSuggestion) {
   } else if (item.kind === "address") {
     setPreviewPage(item.value, item.value, "A page preview", "Address navigation is simulated here. Chromium navigation is not connected yet.");
   } else if (item.kind === "action") {
+    if (item.action === "new-tab") addTab();
     if (item.action === "settings") openSettings();
     if (item.action === "split") setSplit(!state.split);
     if (item.action === "close-tab") closeActiveTab();
