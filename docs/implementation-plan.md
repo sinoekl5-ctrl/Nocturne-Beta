@@ -8,7 +8,8 @@ This plan aligns the 25 November 2026 source audit with the requested Windows, L
 - **Phase 1 — Source/document audit:** pinned source metadata/trees/licenses/build docs and first-pass decisions complete; native build reproduction and SBOM remain open.
 - **Phase 2 — Visual prototype:** dependency-free visual prototype implemented; human visual/accessibility review remains open.
 - **Browser-core Clean Links:** Disable / Suggest / Auto-clean logic is implemented; the preview settings and command bar demonstrate the modes. It is not connected to Chromium navigation.
-- **Browser-core Spaces:** validated Space descriptors, immutable registry transitions, private-room policy, private snapshot exclusion and close lifecycle are implemented. These are metadata policies only; no Chromium profile or BrowserContext isolation exists yet.
+- **Browser-core Spaces:** validated Space descriptors, immutable registry transitions, independent tabs/pins/folders/history, private-history rejection, private snapshot exclusion and close lifecycle are implemented. The visual prototype renders each Space's collections separately. These are metadata policies only; no Chromium profile or BrowserContext isolation exists yet.
+- **Browser-core Command Bar:** local matching for tabs, history, pins, actions, address detection, arithmetic and `doc.new` is implemented and wired to the preview. No external search or real navigation provider is connected.
 - **Phase 3 — Chromium integration:** a pre-integration JavaScript message contract exists on a separate review branch. No Chromium checkout, WebUI controller, C++ bridge, browser process or native browser build exists in the default branch.
 
 ## Phase 0 — Foundations (brief estimate: about 1 week)

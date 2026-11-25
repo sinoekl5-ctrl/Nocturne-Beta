@@ -4,7 +4,7 @@
 
 Nocturne is a planned desktop browser for **Windows, Linux and macOS**. Its engine direction is a cross-platform Chromium foundation informed by [Helium](https://github.com/imputnet/helium). The product shell is intended to be shared across platforms, with narrowly scoped native adapters.
 
-> **Project status (25 November 2026):** foundation, source audit and dependency-free visual prototype are committed. The browser-core now includes the three-mode Clean Links logic and a metadata/lifecycle model for Spaces. **This is not yet a browser:** there is no Chromium checkout, browser process, real website navigation, enforced profile isolation, installer or release build in the default branch. Feature branches remain under review.
+> **Project status (25 November 2026):** foundation, source audit and dependency-free visual prototype are committed. The browser-core now includes the three-mode Clean Links logic, a Spaces model with per-room collections and history rules, and an omnibox matcher for tabs, history, pins, actions, addresses and arithmetic. **This is not yet a browser:** there is no Chromium checkout, browser process, real website navigation, enforced profile isolation, installer or release build in the default branch. Feature branches remain under review.
 
 ## Run the prototype
 
@@ -55,7 +55,8 @@ The Chromium WebUI direction remains a **proposed architecture**. A JavaScript m
 ## Core feature contracts
 
 - [Clean Links](docs/features/url-cleaner.md) — local Disable / Suggest / Auto-clean query-parameter policy; not yet connected to Chromium navigation.
-- [Spaces](docs/features/spaces.md) — validated metadata and private-room lifecycle policy; not yet connected to Chromium profiles or BrowserContexts.
+- [Spaces](docs/features/spaces.md) — validated metadata, per-room tabs/pins/folders/history, and private-room lifecycle policy; Chromium profile isolation is not implemented.
+- [Command Bar](docs/features/command-bar.md) — local matching for tabs, history, pins, commands and calculator; search/navigation providers are not connected.
 
 ## Source audit
 

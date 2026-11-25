@@ -217,3 +217,26 @@ test("tabs retain their folder association within the owning Space", async () =>
   const tab = registry.spaces[0].tabs[0];
   assert.equal(tab.folderId, "reading");
 });
+
+
+test("persistent Space history is searchable and included in its snapshot", async () => {
+  const { addHistoryEntry, clearSpaceHistory } = await import("../browser-core/spaces.mjs");
+  let registry = createSpaceRegistry();
+  registry = addHistoryEntry(registry, "atelier", {
+    id: "visit-1", title: "A research article", url: "article.local", visitedAt: "2026-11-24T12:00:00Z",
+  });
+  assert.equal(registry.spaces[0].history[0].title, "A research article");
+  assert.equal(toPersistedSpaceSnapshot(registry).spaces[0].history.length, 1);
+  registry = clearSpaceHistory(registry, "atelier");
+  assert.equal(registry.spaces[0].history.length, 0);
+});
+
+test("Private Spaces reject history and private entries never appear in snapshots", async () => {
+  const { addHistoryEntry } = await import("../browser-core/spaces.mjs");
+  let registry = createSpaceRegistry();
+  registry = addSpace(registry, { id: "private-room", name: "Private", private: true, mood: "vigil" });
+  assert.throws(() => addHistoryEntry(registry, "private-room", {
+    id: "secret", title: "Secret page", url: "secret.local", visitedAt: "2026-11-25T12:00:00Z",
+  }), /do not retain/i);
+  assert.equal(JSON.stringify(toPersistedSpaceSnapshot(registry)).includes("private-room"), false);
+});

@@ -33,6 +33,11 @@ const state = {
           { id: "studio-pin", title: "Studio", url: "studio.local" },
           { id: "archive", title: "Archive", url: "archive.local" },
         ],
+        history: [
+          { id: "visit-notes", title: "Field notes on attention", url: "notes.local/attention", visitedAt: "2026-11-24T17:15:00Z" },
+          { id: "visit-library", title: "The quiet library", url: "library.local/quiet", visitedAt: "2026-11-24T15:40:00Z" },
+          { id: "visit-essay", title: "A room of one's own", url: "essay.preview", visitedAt: "2026-11-23T18:20:00Z" },
+        ],
       },
       { id: "gambit", name: "Gambit", mood: "gambit", folders: [{ id: "research", name: "Research" }] },
       { id: "vigil", name: "Vigil", mood: "vigil", private: true, folders: [{ id: "private-session", name: "Private Session" }] },
@@ -66,11 +71,9 @@ const moodCopy = {
 };
 
 const commandItems = [
-  { id: "studio", title: "The quiet work of making", subtitle: "Current tab · studio.preview", url: "studio.preview", kind: "tab", reason: "Current tab" },
-  { id: "atlas", title: "Atlas of small ideas", subtitle: "atlas.preview", url: "atlas.preview", kind: "tab" },
-  { id: "weather", title: "Weather & light", subtitle: "weather.preview · Sleeping", url: "weather.preview", kind: "tab" },
-  { id: "essay", title: "A room of one's own", subtitle: "reading.preview", url: "reading.preview", kind: "tab" },
-  { id: "settings", title: "Open preferences", subtitle: "Change appearance, motion, and layout", kind: "action", action: "settings", reason: "Action" },
+  { id: "new-tab", title: "New tab", subtitle: "Create a tab in this Space", kind: "action", action: "new-tab", command: "doc.new", keywords: ["page", "tab"] },
+  { id: "new-folder", title: "New folder", subtitle: "Organize tabs in this Space", kind: "action", action: "new-folder", keywords: ["folder"] },
+  { id: "settings", title: "Open preferences", subtitle: "Change appearance, motion, and layout", kind: "action", action: "settings", keywords: ["preferences"] },
   { id: "spaces", title: "Change Space", subtitle: "Atelier, Gambit, Vigil, Drift, Ember", kind: "action", action: "spaces", reason: "Action" },
   { id: "split", title: "Toggle split view", subtitle: "Show two pages side by side", kind: "action", action: "split", reason: "Action" },
   { id: "private", title: "Enter private room", subtitle: "Temporary session concept", kind: "action", action: "private", reason: "Action" },
@@ -431,7 +434,23 @@ function openCommand() {
 }
 
 function renderSuggestions(query) {
-  suggestions = buildSuggestions(query, commandItems, { cleanLinksMode: state.cleanLinksMode });
+  const active = getActiveSpace();
+  const activeItems = [
+    ...active.tabs.map((tab) => ({
+      id: tab.id,
+      title: tab.title,
+      subtitle: tab.url + (tab.sleeping ? " · Sleeping" : ""),
+      url: tab.url,
+      kind: "tab",
+      sleeping: tab.sleeping,
+    })),
+    ...commandItems.filter((item) => item.kind === "action"),
+  ];
+  suggestions = buildSuggestions(query, activeItems, {
+    cleanLinksMode: state.cleanLinksMode,
+    history: active.history,
+    bookmarks: active.pins,
+  });
   selectedSuggestion = 0;
   const results = $("#commandResults");
   results.replaceChildren();
@@ -490,12 +509,20 @@ function chooseSuggestion(index = selectedSuggestion) {
       ? `Clean-link suggestion preview. Removed: ${item.removedParameters.join(", ")}. No real website was opened.`
       : "Address navigation is simulated here. Chromium navigation is not connected yet.";
     setPreviewPage(item.value, item.value, item.kind === "clean-link" ? "CLEAN LINK PREVIEW" : "A PAGE PREVIEW", cleanLinkDeck);
+  } else if (item.kind === "history" || item.kind === "bookmark") {
+    setPreviewPage(item.title, item.url, item.kind === "history" ? "HISTORY PREVIEW" : "BOOKMARK PREVIEW",
+      "This local record belongs to the active Space. Chromium navigation is not connected yet.");
+  } else if (item.kind === "search") {
+    setPreviewPage("Search preview", "search.local/" + encodeURIComponent(item.query), "SEARCH PREVIEW",
+      "Search request prepared for “" + item.query + "”. A search provider is not connected in this prototype.");
   } else if (item.kind === "action") {
+    if (item.action === "new-tab") addTab();
+    if (item.action === "new-folder") addFolder();
     if (item.action === "settings") openSettings();
     if (item.action === "split") setSplit(!state.split);
     if (item.action === "private") togglePrivate();
     if (item.action === "spaces") announce("Choose a Space from the bottom of the sidebar.");
-  } else {
+  } else if (item.kind === "tab") {
     setActiveTab(item.id);
   }
 }

@@ -75,6 +75,24 @@ function normalizePins(value = []) {
   }));
 }
 
+function normalizeHistory(value = []) {
+  if (!Array.isArray(value)) throw new TypeError("Space history must be an array");
+  const ids = new Set();
+  return Object.freeze(value.map((entry) => {
+    const source = requireRecord(entry, "History entry");
+    const id = normalizeId(source.id, "History entry id");
+    if (ids.has(id)) throw new RangeError("Duplicate history entry id: " + id);
+    ids.add(id);
+    const title = normalizeText(source.title ?? "Untitled", "History title", 256);
+    const url = normalizeText(source.url, "History URL", 8192);
+    const visitedAt = source.visitedAt ?? "";
+    if (typeof visitedAt !== "string" && (typeof visitedAt !== "number" || !Number.isFinite(visitedAt))) {
+      throw new TypeError("History timestamp must be a string or finite number");
+    }
+    return Object.freeze({ id, title, url, visitedAt });
+  }));
+}
+
 function normalizeFolders(value = []) {
   if (!Array.isArray(value)) throw new TypeError("Space folders must be an array");
   const ids = new Set();
@@ -113,6 +131,10 @@ export function createSpaceDescriptor(input = {}) {
   if (!CONTENT_BLOCKING_MODES.includes(contentBlocking)) {
     throw new RangeError("Unknown content-blocking mode: " + String(contentBlocking));
   }
+  const history = normalizeHistory(source.history);
+  if (isPrivate && history.length > 0) {
+    throw new RangeError("Private Spaces cannot contain browsing history");
+  }
 
   return Object.freeze({
     id,
@@ -123,6 +145,7 @@ export function createSpaceDescriptor(input = {}) {
     tabs: normalizeTabs(source.tabs),
     pins: normalizePins(source.pins),
     folders: normalizeFolders(source.folders),
+    history,
     dataPolicy: makeDataPolicy(isPrivate),
   });
 }
@@ -167,6 +190,7 @@ function replaceSpace(registry, id, changes) {
     tabs: Object.hasOwn(patch, "tabs") ? patch.tabs : current.tabs,
     pins: Object.hasOwn(patch, "pins") ? patch.pins : current.pins,
     folders: Object.hasOwn(patch, "folders") ? patch.folders : current.folders,
+    history: Object.hasOwn(patch, "history") ? patch.history : current.history,
   });
   const spaces = registry.spaces.slice();
   spaces[index] = updated;
@@ -241,6 +265,25 @@ export function addTabToSpace(registry, spaceId, tab) {
   return replaceSpace(registry, spaceId, { tabs: [...space.tabs, next] });
 }
 
+export function addHistoryEntry(registry, spaceId, entry) {
+  requireRegistry(registry);
+  const space = registry.spaces.find((item) => item.id === spaceId);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
+  if (space.private) throw new RangeError("Private Spaces do not retain browsing history");
+  const next = normalizeHistory([entry])[0];
+  if (space.history.some((item) => item.id === next.id)) {
+    throw new RangeError("History entry already exists: " + next.id);
+  }
+  return replaceSpace(registry, spaceId, { history: [next, ...space.history] });
+}
+
+export function clearSpaceHistory(registry, spaceId) {
+  requireRegistry(registry);
+  const space = registry.spaces.find((item) => item.id === spaceId);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
+  return replaceSpace(registry, spaceId, { history: [] });
+}
+
 export function removeTabFromSpace(registry, spaceId, tabId) {
   return removeCollectionEntry(registry, spaceId, "tabs", tabId, "tab");
 }
@@ -306,7 +349,7 @@ export function toPersistedSpaceSnapshot(registry) {
   requireRegistry(registry);
   const spaces = registry.spaces
     .filter((space) => !space.private)
-    .map(({ id, name, mood, contentBlocking, tabs, pins, folders }) => Object.freeze({
+    .map(({ id, name, mood, contentBlocking, tabs, pins, folders, history }) => Object.freeze({
       id,
       name,
       mood,
@@ -314,6 +357,7 @@ export function toPersistedSpaceSnapshot(registry) {
       tabs,
       pins,
       folders,
+      history,
     }));
 
   const activeSpaceId = spaces.some((space) => space.id === registry.activeSpaceId)
