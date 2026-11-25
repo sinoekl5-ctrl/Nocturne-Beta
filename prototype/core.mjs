@@ -93,3 +93,13 @@ export function getFallbackTabId(tabIds, closedIndex) {
   if (index < 0 || index >= tabIds.length) return tabIds[0] ?? null;
   return tabIds[index + 1] ?? tabIds[index - 1] ?? null;
 }
+
+
+/** Return the next/previous tab ID, wrapping at either end. */
+export function getAdjacentTabId(tabIds, activeId, direction = 1) {
+  if (!Array.isArray(tabIds) || tabIds.length === 0) return null;
+  const currentIndex = tabIds.indexOf(activeId);
+  if (currentIndex < 0) return null;
+  const step = direction < 0 ? -1 : 1;
+  return tabIds[(currentIndex + step + tabIds.length) % tabIds.length] ?? null;
+}

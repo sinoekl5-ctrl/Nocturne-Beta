@@ -1,4 +1,4 @@
-import { buildSuggestions, createSpaceState, getFallbackTabId, SPACE_MOODS } from "./core.mjs";
+import { buildSuggestions, createSpaceState, getAdjacentTabId, getFallbackTabId, SPACE_MOODS } from "./core.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -439,6 +439,18 @@ $("#settingsDialog").addEventListener("click", (event) => {
 
 document.addEventListener("keydown", (event) => {
   const platformModifier = event.metaKey || event.ctrlKey;
+  const target = event.target;
+  const editable = target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.getAttribute("role") === "textbox");
+  const dialogOpen = $("#commandDialog").open || $("#settingsDialog").open;
+  if (!editable && !dialogOpen) {
+    const backward = (event.ctrlKey && (event.key === "PageUp" || (event.key === "Tab" && event.shiftKey))) || (event.metaKey && event.altKey && event.key === "ArrowLeft");
+    const forward = (event.ctrlKey && (event.key === "PageDown" || event.key === "Tab")) || (event.metaKey && event.altKey && event.key === "ArrowRight");
+    if (backward || forward) {
+      const ids = $$(".tab-row").map((row) => row.dataset.tabId);
+      const nextId = getAdjacentTabId(ids, state.activeTab, backward ? -1 : 1);
+      if (nextId) { event.preventDefault(); setActiveTab(nextId); announce(`Tab ${ids.indexOf(nextId) + 1} of ${ids.length}`); }
+    }
+  }
   if (platformModifier && event.key.toLowerCase() === "l") { event.preventDefault(); openCommand(); }
   if (platformModifier && event.key.toLowerCase() === "t" && !$("#commandDialog").open && !$("#settingsDialog").open) { event.preventDefault(); addTab(); }
   if (platformModifier && event.key.toLowerCase() === "w" && !$("#commandDialog").open && !$("#settingsDialog").open) { event.preventDefault(); closeActiveTab(); }
