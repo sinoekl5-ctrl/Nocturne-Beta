@@ -151,6 +151,11 @@ test("enforces the UTF-8 message budget before action dispatch", () => {
   assert.equal(validateWebUiBridgeRequest(message, trustedFrame).reason, "message-too-large");
 });
 
+test("counts serialized size in UTF-8 bytes rather than JavaScript characters", () => {
+  const message = request("shell.getState", { padding: "é".repeat(4_096) });
+  assert.equal(validateWebUiBridgeRequest(message, trustedFrame).reason, "message-too-large");
+});
+
 test("returns immutable result and payload objects", () => {
   const result = validateWebUiBridgeRequest(
     request("spaces.activate", { spaceId: "gambit" }),
