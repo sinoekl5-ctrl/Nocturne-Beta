@@ -17,8 +17,8 @@
 - [x] Inspect selected Helium build metadata and platform packaging READMEs; pin the three packaging repositories.
 - [x] Inspect Phi open-source build, Crest architecture/trademark policy, Ardia Linux/Windows/build/cross-platform docs, and urlshortener-ui design guide.
 - [x] Record first-pass Adopt / Port / Specify / Skip decisions and the cross-platform WebUI hypothesis.
-- [ ] Clone and reproduce the selected upstream engine build on representative Windows, Linux and macOS machines.
-- [ ] Verify exact compatible Chromium/Helium/platform-package pin set and minimum OS versions.
+- [ ] Clone and reproduce the selected upstream engine build on representative Windows, Linux and macOS machines (environment and exact upstream build paths: `docs/engine-build-readiness.md`).
+- [ ] Verify exact compatible Chromium/Helium/platform-package pin set and minimum OS versions (compatibility remains unproven until native builds: `docs/engine-build-readiness.md`).
 - [ ] Produce a machine-generated SBOM from the chosen, pinned source/dependency set before distributing binaries.
 - [ ] Complete legal review of GPL-3.0 and any mixed file-level licenses before distributing builds.
 
