@@ -1,0 +1,118 @@
+name: Native engine build (manual, self-hosted)
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Native host to build on (runner must be provisioned)
+        required: true
+        type: choice
+        options:
+          - Linux
+          - Windows
+          - macOS
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    if: inputs.platform == 'Linux'
+    runs-on: [self-hosted, nocturne-engine, linux, x64]
+    timeout-minutes: 360
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify pinned sources
+        run: python scripts/engine/checkout.py --platform Linux --workspace "$RUNNER_TEMP/nocturne-engine"
+      - name: Build and package pinned Helium
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/nocturne-engine/linux"
+          scripts/docker-build.sh 2>&1 | tee "$RUNNER_TEMP/nocturne-linux-build.log"
+          scripts/package.sh 2>&1 | tee -a "$RUNNER_TEMP/nocturne-linux-build.log"
+      - name: Upload build log and packages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-engine-linux-evidence
+          path: |
+            ${{ runner.temp }}/nocturne-linux-build.log
+            ${{ runner.temp }}/nocturne-engine/linux/build/release/*.AppImage
+            ${{ runner.temp }}/nocturne-engine/linux/build/release/*.tar.xz
+          if-no-files-found: warn
+          retention-days: 7
+
+  windows:
+    if: inputs.platform == 'Windows'
+    runs-on: [self-hosted, nocturne-engine, windows, x64]
+    timeout-minutes: 360
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify pinned sources
+        shell: pwsh
+        run: python scripts/engine/checkout.py --platform Windows --workspace "$env:RUNNER_TEMP\nocturne-engine"
+      - name: Build and package pinned Helium
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $log = "$env:RUNNER_TEMP\nocturne-windows-build.log"
+          Start-Transcript -Path $log
+          try {
+            Set-Location "$env:RUNNER_TEMP\nocturne-engine\windows"
+            python build.py
+            python package.py
+          } finally {
+            Stop-Transcript
+          }
+      - name: Upload build log and packages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-engine-windows-evidence
+          path: |
+            ${{ runner.temp }}/nocturne-windows-build.log
+            ${{ runner.temp }}/nocturne-engine/windows/build/*.exe
+            ${{ runner.temp }}/nocturne-engine/windows/build/*.zip
+          if-no-files-found: warn
+          retention-days: 7
+
+  macos:
+    if: inputs.platform == 'macOS'
+    runs-on: [self-hosted, nocturne-engine, macOS]
+    timeout-minutes: 360
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify pinned sources
+        run: python scripts/engine/checkout.py --platform macOS --workspace "$RUNNER_TEMP/nocturne-engine"
+      - name: Build pinned Helium
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/nocturne-engine/macos"
+          ./build.sh 2>&1 | tee "$RUNNER_TEMP/nocturne-macos-build.log"
+      - name: Upload build log and package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-engine-macos-evidence
+          path: |
+            ${{ runner.temp }}/nocturne-macos-build.log
+            ${{ runner.temp }}/nocturne-engine/macos/build/*.dmg
+          if-no-files-found: warn
+          retention-days: 7
