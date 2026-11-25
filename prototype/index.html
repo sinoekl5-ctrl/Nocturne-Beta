@@ -88,6 +88,13 @@
           <div class="page-location"><span class="secure-mark">◇</span><span id="pageUrl">nocturne.preview / atelier</span><span class="preview-chip">LOCAL PREVIEW</span></div>
           <div class="page-tools"><button class="page-tool" id="copyAddress" title="Copy preview address">Copy address</button><button class="page-tool" id="pageMenu" title="Page options">···</button></div>
         </div>
+        <div class="url-cleaner-notice" id="urlCleanerNotice" hidden role="status" aria-live="polite">
+          <div class="url-cleaner-notice-copy"><strong id="urlCleanerNoticeTitle">A cleaner link is available</strong><span id="urlCleanerNoticeText">The original address will stay selected unless you choose the cleaned preview.</span></div>
+          <div class="url-cleaner-notice-actions">
+            <button class="cleaner-notice-button cleaner-accept" id="openCleanedPreview" type="button">Use cleaned preview</button>
+            <button class="cleaner-notice-button" id="keepOriginalAddress" type="button">Keep original</button>
+          </div>
+        </div>
         <div class="page-content-grid" id="pageContentGrid">
           <article class="web-page" id="webPage" aria-label="Sample web page preview">
             <div class="page-kicker"><span class="kicker-line"></span><span id="articleKicker">NOTES FROM THE STUDIO</span></div>
@@ -143,7 +150,17 @@
       <div class="settings-content">
         <section class="settings-group"><div class="settings-group-title"><span id="appearanceGroupLabel">APPEARANCE</span><small>01 / 03</small></div><div class="setting-row"><div><strong id="dayLabel">Day Study</strong><small id="dayDescription">A warm paper palette for daylight.</small></div><button class="switch" id="daySetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="contrastLabel">High contrast</strong><small id="contrastDescription">Sharper outlines, no grain or vignette.</small></div><button class="switch" id="contrastSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="motionLabel">Reduce motion</strong><small id="motionDescription">Replace sweeps with quiet fades.</small></div><button class="switch" id="motionSetting" role="switch" aria-checked="false"><span></span></button></div></section>
         <section class="settings-group"><div class="settings-group-title"><span id="layoutGroupLabel">LAYOUT</span><small>02 / 03</small></div><div class="setting-row"><div><strong id="languageLabel">Arabic interface</strong><small id="languageDescription">Preview Arabic labels and right-to-left chrome.</small></div><button class="switch" id="languageSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="mirrorLabel">Mirror sidebar</strong><small id="mirrorDescription">Useful for Arabic and right-to-left reading.</small></div><button class="switch" id="rtlSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="textureLabel">Texture</strong><small id="textureDescription">Subtle grain on browser chrome only.</small></div><button class="switch" id="textureSetting" role="switch" aria-checked="true"><span></span></button></div></section>
-        <section class="settings-group"><div class="settings-group-title"><span id="privacyGroupLabel">PRIVACY</span><small>03 / 03</small></div><div class="privacy-note"><span class="privacy-icon">◈</span><div><strong id="localLabel">Local preview</strong><p id="localDescription">This prototype does not visit websites, store browsing history, or create real isolated browser profiles. Those functions belong to the Chromium implementation.</p></div></div></section>
+        <section class="settings-group"><div class="settings-group-title"><span id="privacyGroupLabel">PRIVACY</span><small>03 / 03</small></div>
+          <div class="setting-row setting-row-select">
+            <div><strong id="urlCleanerLabel">Clean tracking links</strong><small id="urlCleanerDescription">Choose how this Space handles known tracking parameters.</small></div>
+            <label class="sr-only" for="urlCleanerMode">URL cleaner mode</label>
+            <select class="setting-select" id="urlCleanerMode" aria-describedby="urlCleanerDescription">
+              <option value="disable">Disabled</option>
+              <option value="suggest" selected>Suggest</option>
+              <option value="auto">Auto-clean</option>
+            </select>
+          </div>
+          <div class="privacy-note"><span class="privacy-icon">◈</span><div><strong id="localLabel">Local preview</strong><p id="localDescription">This prototype does not visit websites, store browsing history, or create real isolated browser profiles. Those functions belong to the Chromium implementation.</p></div></div></section>
       </div>
       <div class="settings-actions"><span>Changes apply to this preview.</span><button class="primary-button" id="doneSettings">Done</button></div>
     </div>
