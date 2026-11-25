@@ -27,11 +27,12 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 
 ### Remaining
 
-1. Clone the pinned repositories into a dedicated audit workspace and generate a machine-readable SBOM.
-2. Establish a matching Chromium + Helium + macOS/Linux/Windows packaging revision set; do not combine mismatched upstream versions.
-3. Build and run the engine on representative native environments. Record exact OS, CPU, disk, RAM, elapsed time, failures and output hashes.
-4. Validate the proposed Chromium WebUI integration and native bridge trust boundary on each platform.
-5. Complete file-level license/provenance review and legal review before binary distribution.
+1. Reproduce the pinned engine on properly provisioned native build hosts. The current remote audit sandbox is below Chromium's published Linux build requirements; measured facts and upstream platform build recipes are recorded in [engine build readiness](engine-build-readiness.md).
+2. Clone the pinned repositories into a dedicated audit workspace and generate a machine-readable SBOM.
+3. Establish a matching Chromium + Helium + macOS/Linux/Windows packaging revision set; do not combine mismatched upstream versions.
+4. Build and run the engine on representative native environments. Record exact OS, CPU, disk, RAM, elapsed time, failures and output hashes.
+5. Validate the proposed Chromium WebUI integration and native bridge trust boundary on each platform.
+6. Complete file-level license/provenance review and legal review before binary distribution.
 
 **Exit:** every feature has an Adopt/Port/Specify/Skip decision; the exact engine pin is reproducible; supported OS versions and native build matrix are documented.
 
