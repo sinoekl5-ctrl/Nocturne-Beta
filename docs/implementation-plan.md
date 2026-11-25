@@ -5,7 +5,7 @@ This plan aligns the 25 November 2026 source audit with the requested Windows, L
 ## Current status
 
 - **Phase 0 — Foundation:** repository, governance, license baseline, architecture and first CI complete.
-- **Phase 1 — Source/document audit:** pinned source metadata/trees/licenses/build docs and first-pass decisions complete; native build reproduction and SBOM remain open.
+- **Phase 1 — Source/document audit:** pinned source metadata/trees/licenses/build docs, first-pass decisions and structural alignment of all three Helium platform-package gitlinks complete; native build reproduction and SBOM remain open.
 - **Phase 2 — Visual prototype:** first local UI prototype implemented and unit-tested; human visual/accessibility review remains open.
 - **Phase 3 onward:** not started; no Chromium integration or runnable browser yet.
 
@@ -23,17 +23,17 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 - Pinned each candidate's `main` commit and all three Helium platform-packaging repositories.
 - Corrected stale platform assumptions: current Ardia has Linux Chromium-hosted UI work and Windows alpha/WebUI work; its Windows history and docs include hardware and feature limitations.
 - Recorded the difference between Helium's current main Chromium pin (`158.0.8127.88`) and the Ardia document's engine pin (`158.0.8127.36` + Helium 0.22.2).
+- Verified that the pinned macOS, Linux and Windows Helium packaging commits all point their helium-chromium gitlink to the same Helium root commit (`41a32da3ed31e0c4a550b7f317f5ab095deee1c9`); the relationship is enforced by the foundation validator.
 - Scored initial Adopt / Port / Specify / Skip decisions in the source audit.
 
 ### Remaining
 
-1. Clone the pinned repositories into a dedicated audit workspace and generate a machine-readable SBOM.
-2. Establish a matching Chromium + Helium + macOS/Linux/Windows packaging revision set; do not combine mismatched upstream versions.
-3. Build and run the engine on representative native environments. Record exact OS, CPU, disk, RAM, elapsed time, failures and output hashes.
-4. Validate the proposed Chromium WebUI integration and native bridge trust boundary on each platform.
-5. Complete file-level license/provenance review and legal review before binary distribution.
+1. Clone the aligned pinned repositories into a dedicated audit workspace and generate a machine-readable SBOM.
+2. Reproduce native builds and launches on representative macOS, Linux and Windows environments. Record exact OS, CPU, disk, RAM, elapsed time, failures and output hashes.
+3. Validate the proposed Chromium WebUI integration and native bridge trust boundary on each platform.
+4. Complete file-level license/provenance review and legal review before binary distribution.
 
-**Exit:** every feature has an Adopt/Port/Specify/Skip decision; the exact engine pin is reproducible; supported OS versions and native build matrix are documented.
+**Exit:** every feature has an Adopt/Port/Specify/Skip decision; the source pins are aligned; the exact engine build is reproducible; supported OS versions and native build matrix are documented.
 
 ## Phase 2 — Visual prototype (brief estimate: 2 weeks)
 

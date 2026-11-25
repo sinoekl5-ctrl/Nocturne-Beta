@@ -10,6 +10,6 @@ The candidate repositories are research inputs, not blanket permission to copy s
 | Ardia | https://github.com/ardia-browser/ardia | Sidebar, command-bar behavior, Linux/Windows Chromium-hosted UI evidence, importers |
 | urlshortener-ui | https://github.com/igorsyrbu/urlshortener-ui | Minimal internal-page and URL-cleaner patterns |
 
-Supporting Helium platform packaging repositories (`helium-macos`, `helium-linux`, `helium-windows`) are also pinned because their release/build tooling is separate from the Helium patch repository.
+Supporting Helium platform packaging repositories (`helium-macos`, `helium-linux`, `helium-windows`) are also pinned because their release/build tooling is separate from the Helium patch repository. Their helium-chromium gitlinks are verified against the same root commit and Chromium version in [helium-engine-baseline.md](helium-engine-baseline.md); the check is part of scripts/validate_foundation.py.
 
 Add one row per reused/adapted file to `provenance.csv`. Use immutable commit hashes, not moving branches. Preserve every original notice and license. Never include source paintings or assets whose rights are unclear. Build an SBOM from the exact checkout before distributable binaries.

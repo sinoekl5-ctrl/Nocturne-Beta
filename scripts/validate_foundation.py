@@ -17,14 +17,14 @@ REQUIRED_FILES = (
     "docs/decisions/0003-cross-platform-shell.md",
     "docs/design/visual-prototype.md", "docs/audits/2026-11-25-source-audit.md",
     "docs/third-party/README.md", "docs/third-party/provenance.csv",
-    "docs/third-party/upstream-pins.csv",
+    "docs/third-party/upstream-pins.csv", "docs/third-party/helium-engine-baseline.md",
 )
 PROVENANCE_FIELDS = (
     "local_path", "upstream_project", "upstream_repository", "upstream_commit",
     "upstream_path", "original_license", "change_type", "notice_preserved",
     "reviewed_by", "review_date", "notes",
 )
-PIN_FIELDS = ("repository", "ref", "commit", "license_summary", "observed_role", "decision", "checked_at_utc", "notes")
+PIN_FIELDS = ("repository", "ref", "commit", "license_summary", "observed_role", "decision", "checked_at_utc", "helium_chromium_submodule", "helium_chromium_commit", "chromium_version", "notes")
 
 
 def read_csv_header(path: Path) -> tuple[str, ...]:
@@ -61,10 +61,28 @@ def main() -> int:
             for row in rows:
                 if len(row.get("commit", "")) != 40:
                     errors.append(f"Upstream pin is not a 40-character commit SHA: {row.get('repository')}")
-            required_repos = {"imputnet/helium", "phibrowser/phibrowser-mac", "crest-browser/Crest", "ardia-browser/ardia", "igorsyrbu/urlshortener-ui"}
-            missing = required_repos - {row.get("repository") for row in rows}
+            by_repo = {row.get("repository"): row for row in rows}
+            required_repos = {"imputnet/helium", "imputnet/helium-macos", "imputnet/helium-linux", "imputnet/helium-windows", "phibrowser/phibrowser-mac", "crest-browser/Crest", "ardia-browser/ardia", "igorsyrbu/urlshortener-ui"}
+            missing = required_repos - set(by_repo)
             if missing:
                 errors.append(f"Upstream pins missing candidate repositories: {', '.join(sorted(missing))}")
+
+            engine = by_repo.get("imputnet/helium")
+            if engine:
+                engine_commit = engine.get("commit", "")
+                engine_version = engine.get("chromium_version", "")
+                if not engine_version:
+                    errors.append("Helium root pin is missing its verified chromium_version")
+                for package_repo in ("imputnet/helium-macos", "imputnet/helium-linux", "imputnet/helium-windows"):
+                    package = by_repo.get(package_repo)
+                    if not package:
+                        continue
+                    if package.get("helium_chromium_submodule") != "helium-chromium":
+                        errors.append(f"{package_repo} must record its helium-chromium submodule path")
+                    if package.get("helium_chromium_commit") != engine_commit:
+                        errors.append(f"{package_repo} helium-chromium gitlink does not match the pinned Helium root commit")
+                    if package.get("chromium_version") != engine_version:
+                        errors.append(f"{package_repo} Chromium version does not match the pinned Helium root version")
 
     readme_path = ROOT / "README.md"
     if readme_path.is_file():
