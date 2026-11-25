@@ -25,6 +25,8 @@ npm test
 python scripts/validate_foundation.py
 ```
 
+After a native Chromium/Helium build exists, run the [clean-profile HTTPS smoke test](docs/browser-smoke-test.md) against its executable. It verifies launch and rendered DOM output; it is not a release certification.
+
 ## Product principles
 
 - **Private by default.** No mandatory account, no telemetry by default, no background dependency on Google services; crash reporting and future metrics are opt-in.
