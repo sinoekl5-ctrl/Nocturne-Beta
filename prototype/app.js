@@ -1,4 +1,4 @@
-import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
+import { buildSuggestions, createSpaceState, getSpaceShortcutMood, SPACE_MOODS } from "./core.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -425,9 +425,13 @@ document.addEventListener("keydown", (event) => {
     if ($("#commandDialog").open) closeDialog("commandDialog");
     if ($("#settingsDialog").open) closeDialog("settingsDialog");
   }
-  if (!platformModifier && !event.altKey && !event.shiftKey && !$("input:focus") && /^[1-5]$/.test(event.key)) {
-    setMood(SPACE_MOODS[Number(event.key) - 1]);
-  }
+  const editableTarget = event.target instanceof Element
+    && Boolean(event.target.closest("input, textarea, select, [contenteditable='true'], [role='textbox']"));
+  const moodShortcut = getSpaceShortcutMood(event, {
+    editableTarget,
+    dialogOpen: $("#commandDialog").open || $("#settingsDialog").open,
+  });
+  if (moodShortcut) setMood(moodShortcut);
 });
 
 $("#readingToggle").setAttribute("aria-label", "Toggle reading mode");
