@@ -28,3 +28,25 @@ test("Closing Split View resets focus to the primary pane", () => {
 test("Second pane focus has a single event handler", () => {
   assert.equal((app.match(/\$\("#focusSecondPane"\)\.addEventListener\("click"/g) ?? []).length, 1);
 });
+
+test("Split View uses a real accessible divider inside a two-pane grid", () => {
+  assert.match(html, /role="separator"/);
+  assert.match(html, /aria-orientation="vertical"/);
+  assert.match(html, /aria-valuemin="25"/);
+  assert.match(html, /aria-valuemax="75"/);
+  assert.match(html, /id="splitDivider"[^>]*tabindex="0"/);
+  assert.match(app, /function setSplitRatio/);
+  assert.match(app, /--split-first-pane/);
+  assert.match(css, /grid-template-columns: minmax\(0, var\(--split-first-pane/);
+  assert.match(css, /cursor: col-resize/);
+  assert.match(css, /\.second-pane \{ position: relative/);
+});
+test("Split View supports pointer dragging and keyboard resizing", () => {
+  assert.match(app, /setPointerCapture/);
+  assert.match(app, /pointermove/);
+  assert.match(app, /ArrowLeft/);
+  assert.match(app, /ArrowRight/);
+  assert.match(app, /event\.key === "Home"/);
+  assert.match(app, /event\.key === "End"/);
+  assert.match(app, /aria-valuetext/);
+});
