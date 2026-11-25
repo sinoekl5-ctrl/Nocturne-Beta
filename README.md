@@ -16,7 +16,7 @@ npm run dev
 
 Open `http://127.0.0.1:4173`.
 
-The prototype demonstrates the sidebar, command bar (`Ctrl/Cmd + L`), sample tabs/folders, pins, five Space moods, split-view concept, reading mode, Day Study, high contrast, reduced motion and RTL mirroring. It uses original CSS illustration only. Its page is a static mockup and it makes no external website requests. “Private room” is a visual state, not a security boundary. See [prototype/README.md](prototype/README.md).
+The prototype demonstrates the sidebar, command bar (Ctrl/Cmd + L), sample tabs/folders, pins, five Space moods, split-view concept, reading mode, Day Study, high contrast, reduced motion, RTL mirroring and a simulated URL Cleaner with per-Space Disable / Suggest / Auto-clean modes. Suggest keeps the original address until you explicitly choose the cleaned preview. It uses original CSS illustration only. Its page is a static mockup and it makes no external website requests. “Private room” is a visual state, not a security boundary. See [prototype/README.md](prototype/README.md).
 
 Run local checks:
 
