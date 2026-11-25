@@ -1,29 +1,32 @@
 # Contributing to Nocturne
 
-Nocturne is in its foundation stage. Keep the project small, reproducible, cross-platform, and
-legally traceable.
+Nocturne is in its foundation stage. Contributions should keep the project small,
+reproducible, legally traceable, and cross-platform.
 
-## Before changing code
-1. Read the README, architecture, implementation plan, and relevant decision records.
-2. For changes to platform scope, engine, licensing, data isolation, or v1 scope, update or add an
-   architecture decision record before implementation.
-3. Do not import upstream code until its exact commit, path, license, and file notices are reviewed
-   and entered in docs/third-party/provenance.csv.
-4. Do not add upstream names/logos, copied product screenshots, proprietary binaries, or the
-   supplied reference paintings.
+## Before opening a change
 
-## Engineering expectations
-- Keep Nocturne-specific Chromium patches isolated from upstream patch sets.
-- Pin Chromium, patches, toolchains, and dependencies once the build is established.
-- Prefer small changes with a focused test and a short rationale.
-- No telemetry by default. Diagnostics must not collect URLs, browsing history, credentials, or
-  page contents.
-- Treat Windows, Linux, macOS, keyboard access, reduced motion, and RTL as first-class test cases.
+1. Read the README, architecture document, implementation plan, and relevant decision records.
+2. For a change that alters platform scope, engine choice, licensing, data isolation, or first-release scope, open or update a decision record before implementation.
+3. Do not import upstream code until its exact source commit, path, license, and notices have been reviewed and entered in `docs/third-party/provenance.csv`.
+4. Do not add the reference paintings, upstream logos, product icons, proprietary binaries, or copied product screenshots.
+
+## Change expectations
+
+- Keep Nocturne-specific Chromium patches isolated from the upstream patch series.
+- Pin toolchains, Chromium revisions, patch-set revisions, and dependencies once the build is established.
+- Prefer small, reviewable changes with focused tests and a short rationale.
+- Avoid telemetry and network calls that are not required for the user's requested action.
+- Never include URLs, browsing history, credentials, or page contents in diagnostic reporting.
+- Treat Windows, Linux, macOS, keyboard-only operation, reduced motion, and RTL layout as first-class test cases as their implementation lands.
 
 ## Commit messages
-Use short imperative subjects and prefixes such as docs:, build:, feat:, fix:, privacy:, a11y:, chore:.
+
+Use a short imperative subject. Suggested prefixes are `docs:`, `build:`, `feat:`, `fix:`, `privacy:`, `a11y:`, and `chore:`. Keep unrelated changes in separate commits.
 
 ## Pull requests
-Explain user-visible behavior or engineering rationale, affected platforms, tests, and license or
-provenance impact. Prototype screenshots must not contain protected reference paintings or
-unlicensed third-party assets.
+
+A pull request should explain the user-visible behavior or engineering reason, identify affected platforms, include tests or a clear reason tests are not applicable, and list any license/provenance impact. Screenshots of the visual prototype are welcome, but must not contain copyrighted reference paintings or third-party product assets without permission.
+
+## Local prototype checks
+
+From the repository root, run `npm test` and `python scripts/validate_foundation.py`. Start the visual study with `npm run dev`. The prototype intentionally has no runtime dependencies. Do not connect network navigation or privileged Chromium bridge calls to it without a separate security design/review.

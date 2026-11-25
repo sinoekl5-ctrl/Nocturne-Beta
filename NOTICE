@@ -2,17 +2,19 @@ NOCTURNE — THIRD-PARTY AND PROJECT NOTICE
 
 Copyright (C) 2026 Nocturne contributors.
 
-This is the initial Nocturne project foundation. It contains project-authored planning and design
-documentation only; it does not bundle Chromium, Helium, Ardia, Crest, Phi, urlshortener-ui
-implementation code, third-party binaries, or the private reference paintings.
+This repository is the initial Nocturne project foundation. At this stage it contains
+project-authored planning and design documentation and does not bundle Chromium,
+Helium, Ardia, Crest, Phi, urlshortener-ui implementation code, third-party binaries,
+or the private reference paintings.
 
-The working project license is GNU General Public License version 3.0 only. Third-party
-components may carry additional or different notices and license conditions. Preserve those
-notices and record every borrowed file/component in docs/third-party/provenance.csv before
-incorporating code or assets.
+Nocturne's working project license is GNU General Public License version 3.0 only.
+Third-party components may carry additional or different notices and license
+conditions. Those notices must be preserved with the relevant files and recorded in
+docs/third-party/provenance.csv before code or assets are incorporated.
 
-Upstream project names, logos, icons, screenshots, and marks remain the property of their owners.
-No endorsement or affiliation is implied.
+Product and repository names, logos, icons, screenshots, and other marks belonging
+to upstream projects remain the property of their respective owners. No endorsement
+or affiliation is implied.
 
-The five supplied paintings are private moodboard material and are not licensed for redistribution
-or product use. Shipped artwork must be original or separately licensed in writing.
+The five paintings supplied as a private design moodboard are not project assets and
+are not licensed for redistribution or product use by virtue of appearing in the brief.

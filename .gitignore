@@ -1,4 +1,4 @@
-# OS/editor
+# OS and editor files
 .DS_Store
 Thumbs.db
 *.swp
@@ -6,25 +6,26 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Secrets and local environment
+# Local environment and secrets
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 
-# Generic builds
+# JavaScript and generic build outputs
 node_modules/
 dist/
 build/
 coverage/
 *.log
 
-# Chromium/native builds and caches
+# Chromium and large native build outputs
 out/
 **/out/
 .cache/
 .ccache/
+third_party/chromium/src/out/
 
-# Local upstream study workspace
+# Local upstream checkout/study workspace (keep it outside the tracked tree)
 /upstream-study/

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-mood="atelier" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e0d0c">
+  <meta name="description" content="Nocturne — an early visual prototype for a private, painterly browser.">
+  <title>Nocturne — Visual Prototype</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <aside class="sidebar" id="sidebar" aria-label="Browser sidebar">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true"><span></span></div>
+        <div class="brand-copy"><span class="brand-name">NOCTURNE</span><span class="brand-meta">PRIVATE BROWSER · PREVIEW</span></div>
+        <button class="icon-button subtle" id="sidebarMenu" aria-label="Sidebar options" title="Sidebar options">···</button>
+      </div>
+
+      <button class="omnibox" id="omniboxButton" aria-haspopup="dialog" aria-controls="commandDialog">
+        <span class="search-icon" aria-hidden="true"></span>
+        <span class="omnibox-label">Search or enter an address</span>
+        <kbd>⌘ L</kbd>
+      </button>
+
+      <section class="sidebar-section pins-section" aria-labelledby="pinsHeading">
+        <div class="section-heading"><span id="pinsHeading">PINS</span><button class="tiny-button" id="addPin" aria-label="Add a pin" title="Add a pin">+</button></div>
+        <div class="pin-grid" id="pinGrid">
+          <button class="pin-tile" data-page="Field Notes" data-url="notes.local"><span class="pin-glyph glyph-notes">✳</span><span>Field Notes</span></button>
+          <button class="pin-tile" data-page="Library" data-url="library.local"><span class="pin-glyph glyph-library">▤</span><span>Library</span></button>
+          <button class="pin-tile" data-page="Studio" data-url="studio.local"><span class="pin-glyph glyph-studio">◌</span><span>Studio</span></button>
+          <button class="pin-tile" data-page="Archive" data-url="archive.local"><span class="pin-glyph glyph-archive">▧</span><span>Archive</span></button>
+        </div>
+      </section>
+
+      <section class="sidebar-section tabs-section" aria-labelledby="tabsHeading">
+        <div class="section-heading"><span id="tabsHeading">TABS</span><span class="section-count" id="tabCount">04</span></div>
+        <div class="tab-list" id="tabList">
+          <div class="tab-group">
+            <button class="folder-row" aria-expanded="true" data-folder="Today"><span class="chevron">⌄</span><span>Today</span><span class="folder-count">3</span></button>
+            <div class="folder-children" data-folder-children="Today">
+              <button class="tab-row active" data-tab-id="studio"><span class="tab-favicon favicon-studio">S</span><span class="tab-title">The quiet work of making</span><span class="tab-state" aria-hidden="true"></span></button>
+              <button class="tab-row" data-tab-id="atlas"><span class="tab-favicon favicon-atlas">A</span><span class="tab-title">Atlas of small ideas</span></button>
+              <button class="tab-row" data-tab-id="weather"><span class="tab-favicon favicon-weather">◒</span><span class="tab-title">Weather & light</span><span class="sleeping-mark" title="Sleeping tab">☾</span></button>
+            </div>
+          </div>
+          <div class="tab-group">
+            <button class="folder-row" aria-expanded="true" data-folder="Reading"><span class="chevron">⌄</span><span>Reading</span><span class="folder-count">1</span></button>
+            <div class="folder-children" data-folder-children="Reading">
+              <button class="tab-row" data-tab-id="essay"><span class="tab-favicon favicon-essay">E</span><span class="tab-title">A room of one's own</span></button>
+            </div>
+          </div>
+          <button class="new-tab-row" id="newTab"><span>＋</span><span>New tab</span><kbd>⌘ T</kbd></button>
+        </div>
+      </section>
+
+      <div class="sidebar-bottom">
+        <div class="space-label-row"><span id="spacesHeading">SPACES</span><button class="tiny-button" id="manageSpaces" title="Manage Spaces" aria-label="Manage Spaces">···</button></div>
+        <nav class="space-switcher" id="spaceSwitcher" aria-label="Spaces">
+          <button class="space-chip selected" data-mood="atelier" aria-pressed="true"><span class="space-dot dot-atelier"></span><span>Atelier</span><span class="space-shortcut">1</span></button>
+          <button class="space-chip" data-mood="gambit" aria-pressed="false"><span class="space-dot dot-gambit"></span><span>Gambit</span><span class="space-shortcut">2</span></button>
+          <button class="space-chip" data-mood="vigil" aria-pressed="false"><span class="space-dot dot-vigil"></span><span>Vigil</span><span class="space-shortcut">3</span></button>
+          <button class="space-chip" data-mood="drift" aria-pressed="false"><span class="space-dot dot-drift"></span><span>Drift</span><span class="space-shortcut">4</span></button>
+          <button class="space-chip" data-mood="ember" aria-pressed="false"><span class="space-dot dot-ember"></span><span>Ember</span><span class="space-shortcut">5</span></button>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="footer-button" id="privateToggle" aria-pressed="false"><span class="footer-icon">◐</span><span id="privateLabel">Private room</span><span class="footer-status" id="privateStatus">Off</span></button>
+          <button class="footer-button" id="settingsButton"><span class="footer-icon">⚙</span><span id="preferencesLabel">Preferences</span></button>
+          <div class="profile-row"><div class="profile-avatar">N</div><div class="profile-copy"><span>Local profile</span><small>Only on this device</small></div><span class="local-indicator" title="Local preview"></span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="workspace" id="workspace">
+      <header class="workspace-header">
+        <div class="window-controls" aria-label="Window controls"><span></span><span></span><span></span></div>
+        <div class="breadcrumb"><span id="breadcrumbSpace">Atelier</span><span class="breadcrumb-separator">/</span><span id="breadcrumbPage">The quiet work of making</span></div>
+        <div class="header-actions">
+          <button class="icon-button" id="splitToggle" aria-pressed="false" title="Toggle split view" aria-label="Toggle split view"><span class="split-icon"></span></button>
+          <button class="icon-button" id="readingToggle" aria-pressed="false" title="Reading mode" aria-label="Reading mode">Aa</button>
+          <button class="icon-button" id="themeToggle" title="Switch theme" aria-label="Switch theme">☼</button>
+          <button class="avatar-button" id="settingsQuick" title="Preferences">N</button>
+        </div>
+      </header>
+
+      <div class="page-stage" id="pageStage">
+        <div class="page-toolbar">
+          <div class="page-location"><span class="secure-mark">◇</span><span id="pageUrl">nocturne.preview / atelier</span><span class="preview-chip">LOCAL PREVIEW</span></div>
+          <div class="page-tools"><button class="page-tool" id="copyAddress" title="Copy preview address">Copy address</button><button class="page-tool" id="pageMenu" title="Page options">···</button></div>
+        </div>
+        <div class="page-content-grid" id="pageContentGrid">
+          <article class="web-page" id="webPage" aria-label="Sample web page preview">
+            <div class="page-kicker"><span class="kicker-line"></span><span id="articleKicker">NOTES FROM THE STUDIO</span></div>
+            <div class="article-headline-row">
+              <div>
+                <p class="article-date" id="articleDate">FIELD JOURNAL&nbsp; / &nbsp;25 NOVEMBER 2026</p>
+                <h1 id="articleTitle">The quiet work<br><em>of making</em></h1>
+                <p class="article-deck" id="articleDeck">On attention, small rituals, and leaving a little room for the unexpected.</p>
+              </div>
+              <div class="article-number" aria-hidden="true">01<span>—</span>05</div>
+            </div>
+            <div class="article-art" aria-label="Abstract original CSS illustration of a quiet studio" role="img">
+              <div class="art-frame"><div class="art-window"></div><div class="art-table"></div><div class="art-chair"></div><div class="art-lamp"></div><div class="art-light"></div><span class="art-caption">STUDY IN STILLNESS · NO. 04</span></div>
+              <div class="art-note">A little space<br>for thought.</div>
+            </div>
+            <div class="article-body">
+              <div class="article-author"><span class="author-rule"></span><span>THE NOCTURNE JOURNAL</span></div>
+              <div class="article-columns">
+                <p class="drop-cap">There is a kind of attention that arrives only when the room grows quiet. The work does not ask to be hurried. It asks for a surface, a little light, and the patience to begin again.</p>
+                <p>We keep the useful things close: a page worth returning to, a note not yet finished, a thought that might become something. The rest can wait in another room.</p>
+              </div>
+            </div>
+            <footer class="article-footer"><span>READING TIME · 4 MIN</span><span>FIELD NOTES &nbsp;·&nbsp; Nº 017</span></footer>
+          </article>
+          <aside class="right-rail" aria-label="Page details">
+            <div class="rail-card rail-card-top"><span class="rail-overline">A QUIETER WEB</span><div class="rail-ornament">✳</div><p>Keep the page bright. Let the browser recede.</p><span class="rail-small">NOCTURNE PRINCIPLE 01</span></div>
+            <div class="rail-card rail-card-bottom"><span class="rail-overline">IN THIS SPACE</span><div class="rail-stat"><strong id="railTabCount">4</strong><span>open tabs</span></div><div class="rail-divider"></div><div class="rail-stat"><strong>02</strong><span>pinned places</span></div><button class="rail-link" id="spaceDetails">Space details <span>↗</span></button></div>
+            <div class="rail-footnote">Your browsing data<br>stays on this device.</div>
+          </aside>
+        </div>
+        <div class="split-divider" id="splitDivider" aria-hidden="true"></div>
+        <section class="second-pane" id="secondPane" hidden aria-label="Second preview pane">
+          <div class="second-pane-head"><span class="second-pane-dot"></span><span>SECOND PANE</span><button class="tiny-button" id="closeSplit" aria-label="Close split view">×</button></div>
+          <div class="second-pane-inner"><span class="pane-number">02</span><p class="pane-kicker">SIDE BY SIDE</p><h2>Two pages.<br><em>One thought.</em></h2><p class="pane-copy">Split view is shown here as an interface concept. A real browser integration will attach independent Chromium contents to each pane.</p><button class="pane-action" id="focusSecondPane">Focus this pane <span>↗</span></button></div>
+        </section>
+      </div>
+      <footer class="status-bar"><span><i class="status-light"></i> Prototype state · no network requests</span><span id="statusMood">ATELIER / NIGHT</span><span id="phaseLabel">PHASE 2 · VISUAL STUDY</span></footer>
+    </main>
+  </div>
+
+  <dialog class="command-dialog" id="commandDialog" aria-labelledby="commandTitle">
+    <div class="command-window">
+      <div class="command-topline"><span class="command-symbol">⌕</span><label class="sr-only" id="commandTitle" for="commandInput">Search or enter a command</label><input id="commandInput" type="text" autocomplete="off" spellcheck="false" placeholder="Search tabs, pages, or enter a command…"><kbd>ESC</kbd></div>
+      <div class="command-hint-row"><span>QUICK FIND</span><span><kbd>↑</kbd><kbd>↓</kbd> move <kbd>↵</kbd> select</span></div>
+      <div class="command-results" id="commandResults" role="listbox" aria-label="Command suggestions"></div>
+      <div class="command-footer"><span><b>NOCTURNE</b> COMMAND BAR</span><span>Search stays on this device</span></div>
+    </div>
+  </dialog>
+
+  <dialog class="settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+    <div class="settings-window">
+      <div class="settings-head"><div><span class="settings-kicker" id="settingsKicker">NOCTURNE / PREFERENCES</span><h2 id="settingsTitle">Shape the room.</h2></div><button class="icon-button close-dialog" data-close="settingsDialog" aria-label="Close preferences">×</button></div>
+      <div class="settings-content">
+        <section class="settings-group"><div class="settings-group-title"><span id="appearanceGroupLabel">APPEARANCE</span><small>01 / 03</small></div><div class="setting-row"><div><strong id="dayLabel">Day Study</strong><small id="dayDescription">A warm paper palette for daylight.</small></div><button class="switch" id="daySetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="contrastLabel">High contrast</strong><small id="contrastDescription">Sharper outlines, no grain or vignette.</small></div><button class="switch" id="contrastSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="motionLabel">Reduce motion</strong><small id="motionDescription">Replace sweeps with quiet fades.</small></div><button class="switch" id="motionSetting" role="switch" aria-checked="false"><span></span></button></div></section>
+        <section class="settings-group"><div class="settings-group-title"><span id="layoutGroupLabel">LAYOUT</span><small>02 / 03</small></div><div class="setting-row"><div><strong id="languageLabel">Arabic interface</strong><small id="languageDescription">Preview Arabic labels and right-to-left chrome.</small></div><button class="switch" id="languageSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="mirrorLabel">Mirror sidebar</strong><small id="mirrorDescription">Useful for Arabic and right-to-left reading.</small></div><button class="switch" id="rtlSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="textureLabel">Texture</strong><small id="textureDescription">Subtle grain on browser chrome only.</small></div><button class="switch" id="textureSetting" role="switch" aria-checked="true"><span></span></button></div></section>
+        <section class="settings-group"><div class="settings-group-title"><span id="privacyGroupLabel">PRIVACY</span><small>03 / 03</small></div><div class="privacy-note"><span class="privacy-icon">◈</span><div><strong id="localLabel">Local preview</strong><p id="localDescription">This prototype does not visit websites, store browsing history, or create real isolated browser profiles. Those functions belong to the Chromium implementation.</p></div></div></section>
+      </div>
+      <div class="settings-actions"><span>Changes apply to this preview.</span><button class="primary-button" id="doneSettings">Done</button></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
