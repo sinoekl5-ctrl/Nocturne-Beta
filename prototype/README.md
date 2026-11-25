@@ -21,4 +21,4 @@ Open `http://127.0.0.1:4173`. No package installation or external font download 
 
 ## Honest boundary
 
-This is not a browser and does not load websites. It has no Chromium process, web contents, real profiles, cookie stores, history, extension support, downloads, or security boundary. The page area is a static sample document. “Private room” is a UI state only and must never be described as secure isolation. Local settings persistence is intentionally not implemented yet.
+This is not a browser and does not load websites. It has no Chromium process, web contents, real profiles, cookie stores, history, extension support, downloads, or security boundary. The page area is a static sample document. “Private room” is a UI state only and must never be described as secure isolation. The URL Cleaner preference is saved in this prototype origin's local storage per Space; it is not isolated by real Chromium profiles. No browsing history, cookies or website contents are stored.
