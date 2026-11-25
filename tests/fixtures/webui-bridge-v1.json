@@ -1,0 +1,28 @@
+{
+  "protocolVersion": 1,
+  "description": "Language-neutral v1 protocol test vectors. frameContext is synthetic test input only; native tests must derive caller identity from Chromium.",
+  "trustedFrame": {
+    "origin": "chrome://nocturne",
+    "isCommitted": true,
+    "isWebUi": true,
+    "isPrimaryMainFrame": true
+  },
+  "cases": [
+    {"name":"state-read","request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":true,"action":"shell.getState"}},
+    {"name":"space-activate","request":{"version":1,"requestId":"r1","action":"spaces.activate","payload":{"spaceId":"atelier-work"}},"expected":{"ok":true,"action":"spaces.activate"}},
+    {"name":"tab-activate","request":{"version":1,"requestId":"r1","action":"tabs.activate","payload":{"tabId":"tab_01"}},"expected":{"ok":true,"action":"tabs.activate"}},
+    {"name":"website-origin","frameContext":{"origin":"https://example.org","isCommitted":true,"isWebUi":true,"isPrimaryMainFrame":true},"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"untrusted-origin"}},
+    {"name":"same-origin-subframe","frameContext":{"origin":"chrome://nocturne","isCommitted":true,"isWebUi":true,"isPrimaryMainFrame":false},"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"not-primary-main-frame"}},
+    {"name":"uncommitted","frameContext":{"origin":"chrome://nocturne","isCommitted":false,"isWebUi":true,"isPrimaryMainFrame":true},"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"uncommitted-document"}},
+    {"name":"wrong-webui","frameContext":{"origin":"chrome://settings","isCommitted":true,"isWebUi":true,"isPrimaryMainFrame":true},"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"untrusted-origin"}},
+    {"name":"unknown-action","request":{"version":1,"requestId":"r1","action":"tabs.runScript","payload":{}},"expected":{"ok":false,"reason":"unknown-action"}},
+    {"name":"extra-envelope-key","request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{},"callerOrigin":"chrome://nocturne"},"expected":{"ok":false,"reason":"invalid-message"}},
+    {"name":"unsafe-space-id","request":{"version":1,"requestId":"r1","action":"spaces.activate","payload":{"spaceId":"../profile"}},"expected":{"ok":false,"reason":"invalid-payload"}},
+    {"name":"extra-payload-key","request":{"version":1,"requestId":"r1","action":"tabs.activate","payload":{"tabId":"tab_1","url":"https://example.org"}},"expected":{"ok":false,"reason":"invalid-payload"}},
+    {"name":"unknown-version","request":{"version":2,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"unsupported-version"}},
+    {"name":"bad-request-id","request":{"version":1,"requestId":"bad id","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"invalid-request-id"}},
+    {"name":"null-frame-context","frameContext":null,"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{}},"expected":{"ok":false,"reason":"invalid-frame-context"}},
+    {"name":"exact-size-boundary","serializedUtf8Bytes":8192,"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{"padding":""}},"expected":{"ok":false,"reason":"invalid-payload"}},
+    {"name":"over-size-boundary","serializedUtf8Bytes":8193,"request":{"version":1,"requestId":"r1","action":"shell.getState","payload":{"padding":""}},"expected":{"ok":false,"reason":"message-too-large"}}
+  ]
+}
