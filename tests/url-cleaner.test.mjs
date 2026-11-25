@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cleanTrackingUrl, isTrackingParameter } from "../packages/core/url-cleaner.mjs";
+import { cleanTrackingUrl, createUrlCleanerPreferences, getUrlCleanerMode, isTrackingParameter, setUrlCleanerMode } from "../packages/core/url-cleaner.mjs";
 
 test("auto mode removes known tracking parameters and preserves useful URL data", () => {
   const input = "https://example.com/article?utm_source=newsletter&id=42&ref=chapter#summary";
@@ -110,4 +110,42 @@ test("tracking classification is deliberately narrow", () => {
   assert.equal(isTrackingParameter("ref"), false);
   assert.equal(isTrackingParameter("source"), false);
   assert.equal(isTrackingParameter("my_utm_source"), false);
+});
+
+test("each Space defaults to Suggest", () => {
+  const preferences = createUrlCleanerPreferences();
+  assert.deepEqual(preferences, {
+    atelier: "suggest", gambit: "suggest", vigil: "suggest", drift: "suggest", ember: "suggest"
+  });
+});
+
+test("cleaner preferences are isolated per Space and immutable", () => {
+  const original = createUrlCleanerPreferences();
+  const updated = setUrlCleanerMode(original, "gambit", "auto");
+
+  assert.notEqual(updated, original);
+  assert.equal(getUrlCleanerMode(updated, "gambit"), "auto");
+  assert.equal(getUrlCleanerMode(updated, "atelier"), "suggest");
+  assert.equal(getUrlCleanerMode(original, "gambit"), "suggest");
+});
+
+test("unknown saved preference values are normalized to Suggest", () => {
+  const preferences = createUrlCleanerPreferences({
+    atelier: "always", gambit: "disable", vigil: "auto", drift: null, extra: "auto"
+  });
+
+  assert.deepEqual(preferences, {
+    atelier: "suggest", gambit: "disable", vigil: "auto", drift: "suggest", ember: "suggest"
+  });
+  assert.equal(Object.hasOwn(preferences, "extra"), false);
+});
+
+test("unknown Space names and unknown modes cannot enable automatic cleaning", () => {
+  const preferences = createUrlCleanerPreferences();
+  const unknownSpace = setUrlCleanerMode(preferences, "guest", "auto");
+  const invalidMode = setUrlCleanerMode(preferences, "atelier", "always");
+
+  assert.equal(getUrlCleanerMode(unknownSpace, "guest"), "suggest");
+  assert.equal(getUrlCleanerMode(unknownSpace, "atelier"), "suggest");
+  assert.equal(getUrlCleanerMode(invalidMode, "atelier"), "suggest");
 });
