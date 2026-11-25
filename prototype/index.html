@@ -88,7 +88,7 @@
       <div class="page-stage" id="pageStage">
         <div class="page-toolbar">
           <div class="page-location"><span class="secure-mark">◇</span><span id="pageUrl">nocturne.preview / atelier</span><span class="preview-chip">LOCAL PREVIEW</span></div>
-          <div class="page-tools"><button class="page-tool" id="copyAddress" title="Copy preview address">Copy address</button><button class="page-tool" id="pageMenu" title="Page options">···</button></div>
+          <div class="page-tools"><button class="page-tool" id="peekButton" aria-haspopup="dialog" aria-controls="peekDialog" title="Peek a related page">Peek</button><button class="page-tool" id="copyAddress" title="Copy preview address">Copy address</button><button class="page-tool" id="pageMenu" title="Page options">···</button></div>
         </div>
         <div class="page-content-grid" id="pageContentGrid">
           <article class="web-page" id="webPage" aria-label="Sample web page preview">
@@ -151,6 +151,13 @@
     </div>
   </dialog>
 
+  <dialog class="peek-dialog" id="peekDialog" aria-labelledby="peekTitle">
+    <div class="peek-shell">
+      <header class="peek-header"><div><p class="peek-kicker">NOCTURNE / PEEK</p><h2 id="peekTitle">A related page</h2></div><button class="tiny-button" id="closePeek" aria-label="Close Peek">×</button></header>
+      <div class="peek-preview"><span class="peek-preview-label">LOCAL LINK PREVIEW</span><h3>Atlas of small ideas</h3><p>A short preview before you leave the page. In this prototype, content is local and illustrative; Chromium link metadata is not connected.</p><div class="peek-url">atlas.preview</div></div>
+      <footer class="peek-actions"><button class="page-tool" id="peekOpenCurrent">Open in current tab</button><button class="primary-button" id="peekOpenNew">Open in new tab</button></footer>
+    </div>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="./app.js"></script>
 </body>

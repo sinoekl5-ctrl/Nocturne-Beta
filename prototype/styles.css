@@ -213,3 +213,16 @@ kbd { display: inline-grid; min-width: 22px; height: 19px; place-items: center; 
 @media (max-width: 820px) { body { overflow: auto; }.app-shell { min-height: 700px; }.sidebar { flex-basis: 220px; width: 220px; padding-inline: 10px; }.page-content-grid { grid-template-columns: minmax(0,1fr); }.right-rail { display: none; }.second-pane { width: 42%; }.web-page { padding-inline: 28px; }.article-body { grid-template-columns: 1fr; gap: 10px; }.article-columns { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .app-shell { min-height: 100vh; height: auto; flex-direction: column; }.sidebar { width: 100%; min-width: 0; flex: 0 0 auto; padding: 10px 12px; }.brand-row { margin-bottom: 10px; }.pins-section, .tabs-section, .profile-row, .space-label-row, .sidebar-footer .footer-button:not(#privateToggle) { display: none; }.sidebar-bottom { margin-top: 7px; }.space-switcher { display: flex; gap: 5px; overflow-x: auto; }.space-chip { flex: 0 0 auto; width: auto; padding: 0 9px; }.space-shortcut { display: none; }.sidebar-footer { padding-top: 6px; margin-top: 6px; }.workspace-header { padding-inline: 12px; }.window-controls { display: none; }.page-stage { min-height: 600px; padding: 10px; }.web-page { padding: 26px 22px 18px; }.article-headline-row { margin-top: 22px; }.article-headline-row h1 { font-size: 42px; }.article-number { display: none; }.article-columns { grid-template-columns: 1fr; }.second-pane { inset-inline-end: 7px; width: 45%; }.status-bar { padding-inline: 10px; }.status-bar span:last-child { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+.peek-dialog { width: min(460px, calc(100vw - 28px)); max-width: none; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--chrome-bg); color: var(--chrome-text); box-shadow: 0 24px 80px #0005; }
+.peek-dialog::backdrop { background: #090b10a8; backdrop-filter: blur(4px); }
+.peek-shell { padding: 18px; }
+.peek-header, .peek-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.peek-kicker, .peek-preview-label { margin: 0; color: var(--chrome-muted); font: 9px ui-monospace, monospace; letter-spacing: .13em; }
+.peek-header h2 { margin: 5px 0 0; font: 500 20px/1.2 Georgia, serif; }
+.peek-preview { margin: 18px 0; padding: 18px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--chrome-text) 3%, transparent); }
+.peek-preview h3 { margin: 13px 0 8px; font: 500 24px/1.2 Georgia, serif; }
+.peek-preview p { margin: 0; color: var(--chrome-muted); font-size: 12px; line-height: 1.7; }
+.peek-url { margin-top: 14px; color: var(--accent); font: 10px ui-monospace, monospace; }
+.peek-actions { justify-content: flex-end; padding-top: 2px; }
+@media (prefers-reduced-motion: reduce) { .peek-dialog::backdrop { backdrop-filter: none; } }
