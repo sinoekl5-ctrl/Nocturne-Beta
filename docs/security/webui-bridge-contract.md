@@ -68,3 +68,11 @@ Those Node tests prove only that the reference protocol contract behaves as docu
 `tests/fixtures/webui-bridge-v1.json` is the language-neutral acceptance/denial corpus for protocol v1. The Node reference tests consume it directly; future Chromium C++ unit/browser tests should load the same vectors (using an adapter from fixture frame context to browser-owned test frame state) to prevent JS/native drift. Fixture `frameContext` values are synthetic test inputs only: production code must derive caller identity from Chromium and must never trust renderer-supplied context.
 
 The corpus covers the three allow-listed actions, website and wrong-WebUI origins, subframes, uncommitted frames, malformed/extra envelope and payload fields, unknown actions/versions, invalid identifiers, invalid host context, and the exact 8 KiB / 8 KiB + 1 UTF-8 boundaries. These tests validate the reference protocol only; they do not prove Chromium process or origin isolation.
+
+## Frontend request adapter
+
+`packages/core/webui-bridge-client.mjs` provides a narrow typed caller for the future shell. It exposes only `getState()`, `activateSpace(spaceId)`, and `activateTab(tabId)`; it does not accept arbitrary action names. It validates the request shape with the reference contract before handing the validated request to an injected transport.
+
+The adapter's synthetic trusted-frame context exists only to reuse the reference schema validator. It is **not** evidence that the caller is a trusted Chromium WebUI, and must never be used as native authorization. The real transport must be wired only inside the registered `chrome://nocturne/` page; the native host must independently derive committed frame/origin state, validate the envelope and payload, and authorize the target against browser-owned objects.
+
+The adapter intentionally does not define response semantics or promise/callback correlation yet; those belong in the native vertical-slice design after the pinned Chromium WebUI transport is compiled and tested. Node tests verify the fixed action surface, request shapes, invalid input rejection before transport, and single-attempt error propagation. They do not test Chromium or a live bridge.
