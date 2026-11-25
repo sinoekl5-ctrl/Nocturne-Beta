@@ -13,7 +13,7 @@ test("Split View provides focus controls and local sample switching", () => {
   assert.match(app, /renderSecondPanePage\(state\.secondPanePage \+ 1\)/);
 });
 test("Split View updates focus state and clearly marks local-only samples", () => {
-  assert.match(app, /data-active-pane/);
+  assert.match(app, /dataset\.activePane/);
   assert.match(app, /First preview pane focused/);
   assert.match(app, /Second preview pane focused/);
   assert.match(html, /no separate Chromium tab or network page is attached/);
@@ -21,5 +21,5 @@ test("Split View updates focus state and clearly marks local-only samples", () =
 });
 test("Closing Split View resets focus to the primary pane", () => {
   assert.match(app, /state\.activePane = 1/);
-  assert.match(app, /data-active-pane = "1"/);
+  assert.match(app, /dataset\.activePane = "1"/);
 });
