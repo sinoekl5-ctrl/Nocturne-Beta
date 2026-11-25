@@ -85,3 +85,14 @@ export function createSpaceState(mood = "atelier") {
   const safeMood = SPACE_MOODS.includes(mood) ? mood : "atelier";
   return { mood: safeMood, private: safeMood === "vigil", tabs: [], pins: [] };
 }
+
+/**
+ * Resolve the global 1–5 Space shortcut without stealing keystrokes from
+ * editable controls or open dialogs.
+ */
+export function getSpaceShortcutMood(event, { editableTarget = false, dialogOpen = false } = {}) {
+  const key = String(event?.key ?? "");
+  if (dialogOpen || editableTarget || event?.metaKey || event?.ctrlKey || event?.altKey || event?.shiftKey) return null;
+  if (!/^[1-5]$/.test(key)) return null;
+  return SPACE_MOODS[Number(key) - 1] ?? null;
+}
