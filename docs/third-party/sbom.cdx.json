@@ -1,0 +1,337 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-25T00:00:00Z",
+    "component": {
+      "type": "application",
+      "name": "nocturne",
+      "bom-ref": "nocturne"
+    },
+    "properties": [
+      {
+        "name": "nocturne:scope",
+        "value": "source-pin-inventory-only"
+      },
+      {
+        "name": "nocturne:generated-from",
+        "value": "docs/third-party/upstream-pins.csv"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/ardia-browser/ardia@55f041374a10605be46fbbe6aa935d557ee22b24",
+      "name": "ardia-browser/ardia",
+      "version": "55f041374a10605be46fbbe6aa935d557ee22b24",
+      "purl": "pkg:github/ardia-browser/ardia@55f041374a10605be46fbbe6aa935d557ee22b24",
+      "description": "Chromium browser UX",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-3.0 as distributed with Apache-2.0 files/notices"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/ardia-browser/ardia"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": " Linux host"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": " evolving Windows host"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Port behavior; audit any code"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/crest-browser/Crest@b36496c6e5af334e76040f119fccec656d87b969",
+      "name": "crest-browser/Crest",
+      "version": "b36496c6e5af334e76040f119fccec656d87b969",
+      "purl": "pkg:github/crest-browser/Crest@b36496c6e5af334e76040f119fccec656d87b969",
+      "description": "Space model and native Apple browser architecture",
+      "licenses": [
+        {
+          "license": {
+            "name": "MPL-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/crest-browser/Crest"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Specify or port behavior"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Review file-level notices and TRADEMARKS.md before any reuse"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/igorsyrbu/urlshortener-ui@4a4daa10f346143487def11b57e3627d50d0196a",
+      "name": "igorsyrbu/urlshortener-ui",
+      "version": "4a4daa10f346143487def11b57e3627d50d0196a",
+      "purl": "pkg:github/igorsyrbu/urlshortener-ui@4a4daa10f346143487def11b57e3627d50d0196a",
+      "description": "Minimal URL-shortener dashboard and UI patterns",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/igorsyrbu/urlshortener-ui"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Specify or port narrow patterns"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Not a browser; no browser engine or tab/navigation features"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/imputnet/helium@41a32da3ed31e0c4a550b7f317f5ab095deee1c9",
+      "name": "imputnet/helium",
+      "version": "41a32da3ed31e0c4a550b7f317f5ab095deee1c9",
+      "purl": "pkg:github/imputnet/helium@41a32da3ed31e0c4a550b7f317f5ab095deee1c9",
+      "description": "Chromium patch set and build tooling",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-3.0 plus imported file-level notices"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/imputnet/helium"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Adopt candidate"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "chromium_version.txt at this commit is 158.0.8127.88; Chromium source is fetched separately"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/imputnet/helium-linux@4c8b8256a29290d57a5dd279c4228e770cf3904e",
+      "name": "imputnet/helium-linux",
+      "version": "4c8b8256a29290d57a5dd279c4228e770cf3904e",
+      "purl": "pkg:github/imputnet/helium-linux@4c8b8256a29290d57a5dd279c4228e770cf3904e",
+      "description": "Linux packaging and development tooling",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-3.0 plus imported file-level notices"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/imputnet/helium-linux"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Adopt candidate"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Separate packaging repo; README supports multiple formats and declines Flatpak due sandbox concerns"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/imputnet/helium-macos@0b5bf1274dfce6aa8163060d9a7172fd7bac409b",
+      "name": "imputnet/helium-macos",
+      "version": "0b5bf1274dfce6aa8163060d9a7172fd7bac409b",
+      "purl": "pkg:github/imputnet/helium-macos@0b5bf1274dfce6aa8163060d9a7172fd7bac409b",
+      "description": "macOS packaging and development tooling",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-3.0 plus imported file-level notices"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/imputnet/helium-macos"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Adopt candidate"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Separate packaging repo; test against matching root Chromium and patch pins"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/imputnet/helium-windows@4f7143df92fd0c29ce50c4856523bb8390bf6753",
+      "name": "imputnet/helium-windows",
+      "version": "4f7143df92fd0c29ce50c4856523bb8390bf6753",
+      "purl": "pkg:github/imputnet/helium-windows@4f7143df92fd0c29ce50c4856523bb8390bf6753",
+      "description": "Windows packaging and development tooling",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-3.0 plus imported file-level notices"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/imputnet/helium-windows"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Adopt candidate"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Separate packaging repo; Windows toolchain and packaging setup required"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/phibrowser/phibrowser-mac@8a4fcd21e14718a5b179d99aeb88c7a574180dba",
+      "name": "phibrowser/phibrowser-mac",
+      "version": "8a4fcd21e14718a5b179d99aeb88c7a574180dba",
+      "purl": "pkg:github/phibrowser/phibrowser-mac@8a4fcd21e14718a5b179d99aeb88c7a574180dba",
+      "description": "macOS AI browser and safety architecture",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0 client; proprietary Chromium framework excluded"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/phibrowser/phibrowser-mac"
+        }
+      ],
+      "properties": [
+        {
+          "name": "nocturne:ref",
+          "value": "main"
+        },
+        {
+          "name": "nocturne:decision",
+          "value": "Specify only"
+        },
+        {
+          "name": "nocturne:checked-at",
+          "value": "2026-11-25"
+        },
+        {
+          "name": "nocturne:notes",
+          "value": "Do not depend on or redistribute Phi Framework.framework"
+        }
+      ]
+    }
+  ]
+}
