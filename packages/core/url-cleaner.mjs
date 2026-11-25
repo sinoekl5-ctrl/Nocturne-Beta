@@ -116,3 +116,28 @@ export function cleanTrackingUrl(input, options = {}) {
 }
 
 export { isTrackingParameter };
+
+const PREFERENCE_SPACES = Object.freeze(["atelier", "gambit", "vigil", "drift", "ember"]);
+
+/** Return a fresh, validated Disable/Suggest/Auto preference for each Space. */
+export function createUrlCleanerPreferences(source = {}) {
+  return Object.fromEntries(PREFERENCE_SPACES.map((space) => [
+    space,
+    MODES.has(source?.[space]) ? source[space] : "suggest"
+  ]));
+}
+
+export function getUrlCleanerMode(preferences, space) {
+  if (!PREFERENCE_SPACES.includes(space)) return "suggest";
+  const mode = preferences?.[space];
+  return MODES.has(mode) ? mode : "suggest";
+}
+
+/** Return a validated copy; unknown Spaces and modes cannot enable Auto. */
+export function setUrlCleanerMode(preferences, space, mode) {
+  const next = createUrlCleanerPreferences(preferences);
+  if (PREFERENCE_SPACES.includes(space)) {
+    next[space] = MODES.has(mode) ? mode : "suggest";
+  }
+  return next;
+}

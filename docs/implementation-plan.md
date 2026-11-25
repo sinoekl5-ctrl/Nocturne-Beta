@@ -8,7 +8,7 @@ This plan aligns the 25 November 2026 source audit with the requested Windows, L
 - **Phase 1 — Source/document audit:** pinned source metadata/trees/licenses/build docs, first-pass decisions and structural alignment of all three Helium platform-package gitlinks complete; native build reproduction and SBOM remain open.
 - **Phase 2 — Visual prototype:** first local UI prototype implemented and unit-tested; human visual/accessibility review remains open.
 - **Phase 3 onward:** not started; no Chromium integration or runnable browser yet.
-- **L2 core helper:** a pure URL-cleaner policy helper now exists with Disable / Suggest / Auto modes and isolated regression tests; it is not connected to live navigation or settings.
+- **L2 core helper + prototype UI:** Disable / Suggest / Auto modes, validated per-Space preferences, local preference storage and an explicit Suggest / accept / keep-original flow are implemented in the visual prototype. Real Chromium navigation and profile-backed settings remain open.
 
 ## Phase 0 — Foundations (brief estimate: about 1 week)
 
@@ -42,9 +42,9 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 
 - Dependency-free static app served by Node, with original CSS illustration and no external runtime dependencies.
 - Sidebar, address/command entry, pins, sample tabs/folders, Space switcher and five mood tokens.
-- Command palette filtering sample tabs/actions, address preview, and safe arithmetic parser (no `eval`).
+- Command palette filtering sample tabs/actions, address preview, safe arithmetic parser (no eval), and URL Cleaner simulation with per-Space Disable / Suggest / Auto-clean preferences.
 - Split view, reading-mode concept, private-room visual state, Day Study, high contrast, reduced motion, texture controls and RTL mirroring.
-- Unit tests for calculator parsing, address recognition, suggestions and Space normalization.
+- Unit tests for calculator parsing, address recognition, suggestions, Space normalization, URL Cleaner policy and per-Space preferences; static regression checks for the local URL Cleaner UI.
 
 ### Remaining
 
@@ -75,7 +75,7 @@ Implement real Chromium-backed tabs, pins, folders, sessions, split view, Peek a
 
 Integrate the approved, license-reviewed blocker/filter-list path; connect the tested URL-cleaner core helper to the real omnibox/navigation path and per-Space Disable/Suggest/Auto-clean settings; add selected safe importers; local Insights; onboarding.
 
-The pure URL-cleaner helper is implemented in `packages/core/url-cleaner.mjs`; see `docs/core/url-cleaner.md`. Browser navigation, persistence, preference UI and redirect/history integration remain open.
+The pure helper is implemented in packages/core/url-cleaner.mjs and its local prototype control flow is wired in prototype/app.js; see docs/core/url-cleaner.md. Real Chromium navigation, profile-backed preference persistence and redirect/history integration remain open.
 
 **Exit:** tested import without data loss, readable privacy controls, Insights local-only, no telemetry by default.
 

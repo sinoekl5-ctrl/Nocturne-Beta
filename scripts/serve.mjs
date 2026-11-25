@@ -4,6 +4,8 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("../prototype/", import.meta.url)));
+const projectRoot = resolve(root, "..");
+const sharedCoreModulePath = "/packages/core/url-cleaner.mjs";
 const port = Number(process.env.PORT ?? 4173);
 const mime = new Map([
   [".html", "text/html; charset=utf-8"], [".css", "text/css; charset=utf-8"],
@@ -19,8 +21,11 @@ const server = createServer(async (req, res) => {
   try {
     const rawPath = decodeURIComponent(new URL(req.url ?? "/", "http://localhost").pathname);
     const requested = rawPath === "/" ? "/index.html" : rawPath;
-    const file = resolve(root, `.${normalize(requested)}`);
-    if (file !== root && !file.startsWith(root + sep)) {
+    // Expose this one shared core module to the prototype; all other project files stay private.
+    const servesSharedCoreModule = requested === sharedCoreModulePath;
+    const base = servesSharedCoreModule ? projectRoot : root;
+    const file = resolve(base, `.${normalize(requested)}`);
+    if (file !== base && !file.startsWith(base + sep)) {
       res.writeHead(403).end("Forbidden");
       return;
     }
