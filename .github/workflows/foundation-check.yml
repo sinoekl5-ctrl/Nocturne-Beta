@@ -31,5 +31,7 @@ jobs:
           node-version: "22"
       - name: Validate required files, license and source pins
         run: python scripts/validate_foundation.py
+      - name: Syntax-check the prototype entrypoint
+        run: node --check prototype/app.js
       - name: Test dependency-free browser core
         run: npm test

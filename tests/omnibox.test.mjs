@@ -52,7 +52,7 @@ test("query ranks tabs, bookmarks and history by title relevance", () => {
 });
 
 test("URL search matches URL text and returns the correct source kind", () => {
-  const items = buildOmniboxSuggestions("docs.local", { tabs, history, bookmarks, actions });
+  const items = buildOmniboxSuggestions("api", { tabs, history, bookmarks, actions });
   assert.equal(items[0].kind, "tab");
   assert.equal(items[0].id, "api");
 });
