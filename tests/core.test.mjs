@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildSuggestions, calculateExpression, createSpaceState, getFallbackTabId, isLikelyAddress } from "../prototype/core.mjs";
+import { buildSuggestions, calculateExpression, createSpaceState, getAdjacentTabId, getFallbackTabId, isLikelyAddress } from "../prototype/core.mjs";
 
 const items = [
   { id: "studio", title: "The quiet work of making", subtitle: "studio.preview", kind: "tab" },
@@ -43,4 +43,16 @@ test("tab fallback safely handles empty or invalid selection", () => {
   assert.equal(getFallbackTabId([], 0), null);
   assert.equal(getFallbackTabId(["a", "b"], -1), "a");
   assert.equal(getFallbackTabId(["a", "b"], 8), "a");
+});
+
+
+test("tab navigation wraps in either direction", () => {
+  assert.equal(getAdjacentTabId(["a", "b", "c"], "a", -1), "c");
+  assert.equal(getAdjacentTabId(["a", "b", "c"], "c", 1), "a");
+  assert.equal(getAdjacentTabId(["a", "b", "c"], "b", 1), "c");
+});
+
+test("tab navigation handles empty lists and unknown active tabs", () => {
+  assert.equal(getAdjacentTabId([], "a", 1), null);
+  assert.equal(getAdjacentTabId(["a", "b"], "missing", -1), null);
 });
