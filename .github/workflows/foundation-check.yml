@@ -27,5 +27,7 @@ jobs:
           node-version: "22"
       - name: Validate required files, license and source pins
         run: python scripts/validate_foundation.py
+      - name: Verify generated source-pin SBOM
+        run: node scripts/generate_sbom.mjs --check
       - name: Test prototype core logic
         run: npm test
