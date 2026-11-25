@@ -197,7 +197,8 @@ function focusPane(number) {
   announce(number === 1 ? "First preview pane focused." : "Second preview pane focused.");
 }
 function setSplitRatio(value) {
-  const ratio = Math.round(Math.max(25, Math.min(75, Number(value) || 50)));
+  const numericValue = Number(value);
+  const ratio = Math.round(Math.max(25, Math.min(75, Number.isFinite(numericValue) ? numericValue : 50)));
   state.splitRatio = ratio;
   const grid = $("#pageContentGrid");
   grid.style.setProperty("--split-first-pane", `calc(${ratio}% - 4px)`);
