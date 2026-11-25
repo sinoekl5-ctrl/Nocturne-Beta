@@ -72,7 +72,7 @@ test("adding and activating Spaces returns new immutable registry state", () => 
   const active = activateSpace(withResearch, "research");
   assert.equal(active.activeSpaceId, "research");
   assert.equal(withResearch.activeSpaceId, "atelier");
-  assert.throws(() => activateSpace(active, "missing"), /unknown Space/);
+  assert.throws(() => activateSpace(active, "missing"), /unknown Space/i);
 });
 
 test("updates are scoped to one Space and privacy mode cannot be silently converted", () => {
@@ -85,7 +85,7 @@ test("updates are scoped to one Space and privacy mode cannot be silently conver
   assert.equal(updated.spaces.find((space) => space.id === "atelier").mood, "atelier");
   assert.equal(updated.spaces.find((space) => space.id === "home").contentBlocking, "off");
   assert.throws(() => updateSpace(updated, "home", { private: true }), /cannot be changed/);
-  assert.throws(() => updateSpace(updated, "missing", { name: "Nope" }), /unknown Space/);
+  assert.throws(() => updateSpace(updated, "missing", { name: "Nope" }), /unknown Space/i);
 });
 
 test("Private Space policy is temporary, history-free, non-syncing and relocks on blur", () => {
@@ -125,7 +125,7 @@ test("removing the active Space selects a remaining persistent Space", () => {
   assert.equal(removed.activeSpaceId, "atelier");
   assert.deepEqual(removed.spaces.map((space) => space.id), ["atelier"]);
   assert.throws(() => removeSpace(removed, "atelier"), /At least one non-private Space/);
-  assert.throws(() => removeSpace(removed, "missing"), /unknown Space/);
+  assert.throws(() => removeSpace(removed, "missing"), /unknown Space/i);
 });
 
 test("closing Private Spaces removes all temporary rooms and recovers active Space", () => {
