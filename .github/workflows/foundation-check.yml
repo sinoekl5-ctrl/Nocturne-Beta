@@ -41,3 +41,20 @@ jobs:
         run: node --check prototype/app.js
       - name: Test dependency-free browser core
         run: npm test
+
+  engine-source-checkout:
+    name: Verify pinned upstream checkout (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [Linux, macOS, Windows]
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Clone and verify exact platform + Helium commits
+        run: python scripts/engine/checkout.py --platform "${{ matrix.platform }}" --workspace "${{ runner.temp }}/nocturne-engine"
