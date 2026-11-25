@@ -92,10 +92,17 @@ jobs:
           $freeBefore = (Get-PSDrive -Name $drive).Free
           $timer = [System.Diagnostics.Stopwatch]::StartNew()
           Start-Transcript -Path $log
+          function Invoke-CheckedPython {
+            param([string[]]$Arguments)
+            & python @Arguments
+            if ($LASTEXITCODE -ne 0) {
+              throw "python $($Arguments -join ' ') failed with exit code $LASTEXITCODE"
+            }
+          }
           try {
             Set-Location "$env:RUNNER_TEMP\nocturne-engine\windows"
-            python build.py
-            python package.py
+            Invoke-CheckedPython -Arguments @('build.py')
+            Invoke-CheckedPython -Arguments @('package.py')
           } finally {
             Stop-Transcript
             $timer.Stop()
@@ -111,7 +118,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $root = "$env:RUNNER_TEMP\nocturne-engine\windows"
           $log = "$env:RUNNER_TEMP\nocturne-windows-build.log"
-          $files = Get-ChildItem -Path "$root\build" -File | Where-Object { $_.Extension -in '.exe','.zip' }
+          $files = Get-ChildItem -Path "$root\build" -File -Recurse | Where-Object { $_.Extension -in '.exe','.zip','.msi' }
           $args = @('--platform','Windows','--workspace',"$env:RUNNER_TEMP\nocturne-engine",'--build-log',$log,'--build-command','python build.py && python package.py','--elapsed-seconds',$env:ELAPSED_SECONDS,'--free-disk-before',$env:FREE_DISK_BEFORE,'--output',"$env:RUNNER_TEMP\nocturne-engine-build-record.json")
           foreach ($file in $files) { $args += @('--artifact',$file.FullName) }
           python scripts/engine/capture_build_record.py @args
@@ -125,6 +132,7 @@ jobs:
             ${{ runner.temp }}/nocturne-engine-build-record.json
             ${{ runner.temp }}/nocturne-engine/windows/build/*.exe
             ${{ runner.temp }}/nocturne-engine/windows/build/*.zip
+            ${{ runner.temp }}/nocturne-engine/windows/build/**/*.msi
           if-no-files-found: warn
           retention-days: 7
 
