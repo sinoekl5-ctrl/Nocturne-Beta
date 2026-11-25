@@ -204,7 +204,7 @@ function setSplit(enabled) {
   $("#pageContentGrid").classList.toggle("split-active", state.split);
   $("#focusFirstPane").hidden = !state.split;
   if (state.split) { renderSecondPanePage(); focusPane(state.activePane === 2 ? 2 : 1); }
-  else { state.activePane = 1; $("#pageStage").dataset.activePane = "1"; $("#webPage").classList.remove("pane-focused"); $("#secondPane").classList.remove("pane-focused"); }
+  else { state.activePane = 1; $("#pageStage").dataset.activePane = "1"; $("#webPage").classList.remove("pane-focused"); $("#secondPane").classList.remove("pane-focused"); $("#focusFirstPane").setAttribute("aria-pressed", "true"); $("#focusSecondPane").setAttribute("aria-pressed", "false"); }
   announce(state.split ? "Split view preview opened. Both panes are local samples." : "Split view closed.");
 }
 
