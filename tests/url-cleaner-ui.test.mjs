@@ -36,7 +36,7 @@ test("Suggest presents an explicit choice; Auto and Disable keep their distinct 
 });
 
 test("the suggestion is labeled as preview-only and receives responsive styling", () => {
-  assert.match(html, /id="urlCleanerNotice"[^>]*role="status"/);
+  assert.match(html, /id="urlCleanerNotice"[^>]*role="region" aria-labelledby="urlCleanerNoticeTitle" aria-live="polite"/);
   assert.match(app, /Chromium navigation is not connected/);
   assert.match(app, /No external website was opened/);
   assert.match(css, /\.url-cleaner-notice/);
