@@ -26,3 +26,18 @@ test("Arabic language preview updates document language and direction", () => {
   assert.match(app, /root\.dir = state\.rtl \? "rtl" : "ltr"/);
   assert.match(app, /setRTL\(arabic, false\)/);
 });
+
+test("all preference switches are programmatically named by their visible labels", () => {
+  const switches = [
+    ["daySetting", "dayLabel"],
+    ["contrastSetting", "contrastLabel"],
+    ["motionSetting", "motionLabel"],
+    ["languageSetting", "languageLabel"],
+    ["rtlSetting", "mirrorLabel"],
+    ["textureSetting", "textureLabel"],
+  ];
+  for (const [control, label] of switches) {
+    const pattern = new RegExp(`<button[^>]*id="${control}"[^>]*aria-labelledby="${label}"`);
+    assert.match(html, pattern, `${control} should reference its visible label`);
+  }
+});
