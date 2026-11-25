@@ -60,7 +60,8 @@ For each platform:
 3. Verify package and Helium submodule SHAs against the lock.
 4. Record elapsed time, warnings/errors and output artifact SHA-256 values.
 5. On a clean test profile, verify first-run launch, real HTTPS navigation, page rendering and no startup crash. Record the test log; do not include personal profile data.
-6. Fill [engine-build-record-template.json](engine-build-record-template.json) as a platform-specific record. Use `blocked` or `failed` with explicit `runtime_smoke.known_blockers` when appropriate. Never mark success based on source checkout or compilation alone.
+6. The manual GitHub workflow captures a `built-not-smoke-tested` record with the source SHAs, host metadata and artifact hashes. For a local run, use `scripts/engine/capture_build_record.py` with the same `--platform`, `--workspace`, repeated `--artifact`, `--build-log`, `--build-command`, `--elapsed-seconds`, `--free-disk-before` and `--output` arguments. This record proves build/package completion only; it intentionally leaves runtime smoke fields unset.
+7. After the clean-profile smoke test, update the captured record's runtime and reviewer fields and set `status` to `succeeded`. Use `blocked` or `failed` with explicit `runtime_smoke.known_blockers` when appropriate. Never mark success based on source checkout or compilation alone.
 
 Validate a successful record:
 
