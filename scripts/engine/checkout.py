@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse, json, platform, subprocess, sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 LOCK = ROOT / "docs/third-party/engine-set.json"
 PLATFORM_MAP = {"Darwin":"macOS","Linux":"Linux","Windows":"Windows"}
 
