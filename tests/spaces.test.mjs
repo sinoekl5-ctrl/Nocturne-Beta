@@ -140,3 +140,64 @@ test("closing Private Spaces removes all temporary rooms and recovers active Spa
   assert.equal(closed.activeSpaceId, "atelier");
   assert.equal(registry.spaces.length, 4);
 });
+
+
+test("tabs, pins, and folders belong to one Space and do not leak to another", async () => {
+  const {
+    addTabToSpace,
+    addPinToSpace,
+    addFolderToSpace,
+    removeTabFromSpace,
+    removePinFromSpace,
+    removeFolderFromSpace,
+  } = await import("../browser-core/spaces.mjs");
+
+  let registry = createSpaceRegistry();
+  registry = addSpace(registry, { id: "research", name: "Research", mood: "gambit" });
+  registry = addTabToSpace(registry, "research", {
+    id: "paper", title: "Source paper", url: "https://example.org/paper", sleeping: true,
+  });
+  registry = addPinToSpace(registry, "research", {
+    id: "journal", title: "Journal", url: "https://example.org/journal",
+  });
+  registry = addFolderToSpace(registry, "research", { id: "reading-list", name: "Reading list" });
+
+  const atelier = registry.spaces.find((space) => space.id === "atelier");
+  const research = registry.spaces.find((space) => space.id === "research");
+  assert.equal(atelier.tabs.length, 0);
+  assert.equal(atelier.pins.length, 0);
+  assert.equal(atelier.folders.length, 0);
+  assert.equal(research.tabs[0].title, "Source paper");
+  assert.equal(research.tabs[0].sleeping, true);
+  assert.equal(research.pins[0].id, "journal");
+  assert.equal(research.folders[0].name, "Reading list");
+
+  registry = removeTabFromSpace(registry, "research", "paper");
+  registry = removePinFromSpace(registry, "research", "journal");
+  registry = removeFolderFromSpace(registry, "research", "reading-list");
+  assert.equal(registry.spaces.find((space) => space.id === "research").tabs.length, 0);
+  assert.equal(registry.spaces.find((space) => space.id === "research").pins.length, 0);
+  assert.equal(registry.spaces.find((space) => space.id === "research").folders.length, 0);
+});
+
+test("collection IDs are unique within a Space and removals fail for missing entries", async () => {
+  const { addTabToSpace, removeTabFromSpace } = await import("../browser-core/spaces.mjs");
+  let registry = createSpaceRegistry();
+  registry = addTabToSpace(registry, "atelier", { id: "one", title: "One", url: "https://example.com" });
+  assert.throws(() => addTabToSpace(registry, "atelier", { id: "one", title: "Duplicate", url: "https://example.net" }), /already exists/);
+  assert.throws(() => removeTabFromSpace(registry, "atelier", "missing"), /Unknown tab/);
+});
+
+test("persistent snapshots include persistent Space collections but never private collections", async () => {
+  const { addTabToSpace } = await import("../browser-core/spaces.mjs");
+  let registry = createSpaceRegistry();
+  registry = addSpace(registry, { id: "vigil-room", name: "Vigil", mood: "vigil", private: true });
+  registry = addTabToSpace(registry, "atelier", { id: "saved-tab", title: "Saved", url: "https://example.com" });
+  registry = addTabToSpace(registry, "vigil-room", { id: "private-tab", title: "Private", url: "https://private.example" });
+
+  const snapshot = toPersistedSpaceSnapshot(registry);
+  const persistent = snapshot.spaces.find((space) => space.id === "atelier");
+  assert.equal(persistent.tabs[0].id, "saved-tab");
+  assert.equal(snapshot.spaces.some((space) => space.id === "vigil-room"), false);
+  assert.equal(JSON.stringify(snapshot).includes("private-tab"), false);
+});
