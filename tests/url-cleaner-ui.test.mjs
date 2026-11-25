@@ -2,10 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [html, app, css] = await Promise.all([
+const [html, app, css, server] = await Promise.all([
   readFile(new URL("../prototype/index.html", import.meta.url), "utf8"),
   readFile(new URL("../prototype/app.js", import.meta.url), "utf8"),
-  readFile(new URL("../prototype/styles.css", import.meta.url), "utf8")
+  readFile(new URL("../prototype/styles.css", import.meta.url), "utf8"),
+  readFile(new URL("../scripts/serve.mjs", import.meta.url), "utf8")
 ]);
 
 test("prototype exposes an accessible three-mode cleaner preference", () => {
@@ -40,4 +41,11 @@ test("the suggestion is labeled as preview-only and receives responsive styling"
   assert.match(app, /No external website was opened/);
   assert.match(css, /\.url-cleaner-notice/);
   assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.url-cleaner-notice/);
+});
+
+test("prototype server allowlists the shared core module without exposing the repository root", () => {
+  assert.match(server, /sharedCoreModulePath = "\/packages\/core\/url-cleaner\.mjs"/);
+  assert.match(server, /requested === sharedCoreModulePath/);
+  assert.match(server, /servesSharedCoreModule \? projectRoot : root/);
+  assert.match(server, /file !== base && !file\.startsWith\(base \+ sep\)/);
 });
