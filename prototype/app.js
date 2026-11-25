@@ -1,11 +1,54 @@
 import { buildSuggestions, createSpaceState, SPACE_MOODS } from "./core.mjs";
+import { CLEAN_LINK_MODES } from "../browser-core/url-cleaner.mjs";
+import {
+  CONTENT_BLOCKING_MODES,
+  createSpaceRegistry,
+  addSpace,
+  activateSpace,
+  updateSpace,
+  addTabToSpace,
+  addPinToSpace,
+  addFolderToSpace,
+  setActiveTabInSpace,
+} from "../browser-core/spaces.mjs";
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const root = document.documentElement;
 const state = {
   mood: "atelier",
+  spaceRegistry: createSpaceRegistry({
+    spaces: [
+      {
+        id: "atelier", name: "Atelier", mood: "atelier",
+        folders: [{ id: "today", name: "Today" }, { id: "reading", name: "Reading" }],
+        tabs: [
+          { id: "studio", title: "The quiet work of making", url: "studio.preview", folderId: "today" },
+          { id: "atlas", title: "Atlas of small ideas", url: "atlas.preview", folderId: "today" },
+          { id: "weather", title: "Weather & light", url: "weather.preview", folderId: "today", sleeping: true },
+          { id: "essay", title: "A room of one's own", url: "essay.preview", folderId: "reading" },
+        ],
+        pins: [
+          { id: "field-notes", title: "Field Notes", url: "notes.local" },
+          { id: "library", title: "Library", url: "library.local" },
+          { id: "studio-pin", title: "Studio", url: "studio.local" },
+          { id: "archive", title: "Archive", url: "archive.local" },
+        ],
+        history: [
+          { id: "visit-notes", title: "Field notes on attention", url: "notes.local/attention", visitedAt: "2026-11-24T17:15:00Z" },
+          { id: "visit-library", title: "The quiet library", url: "library.local/quiet", visitedAt: "2026-11-24T15:40:00Z" },
+          { id: "visit-essay", title: "A room of one's own", url: "essay.preview", visitedAt: "2026-11-23T18:20:00Z" },
+        ],
+      },
+      { id: "gambit", name: "Gambit", mood: "gambit", folders: [{ id: "research", name: "Research" }] },
+      { id: "vigil", name: "Vigil", mood: "vigil", private: true, folders: [{ id: "private-session", name: "Private Session" }] },
+      { id: "drift", name: "Drift", mood: "drift", folders: [{ id: "media", name: "Media" }] },
+      { id: "ember", name: "Ember", mood: "ember", folders: [{ id: "saved", name: "Saved" }] },
+    ],
+    activeSpaceId: "atelier",
+  }),
   theme: "night",
+  cleanLinksMode: "suggest",
   highContrast: false,
   reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   rtl: false,
@@ -17,6 +60,7 @@ const state = {
   activeTab: "studio",
   activePane: 1,
   folders: { Today: true, Reading: true },
+  folderExpansion: { atelier: { today: true, reading: true } },
 };
 
 const moodCopy = {
@@ -28,11 +72,9 @@ const moodCopy = {
 };
 
 const commandItems = [
-  { id: "studio", title: "The quiet work of making", subtitle: "Current tab · studio.preview", url: "studio.preview", kind: "tab", reason: "Current tab" },
-  { id: "atlas", title: "Atlas of small ideas", subtitle: "atlas.preview", url: "atlas.preview", kind: "tab" },
-  { id: "weather", title: "Weather & light", subtitle: "weather.preview · Sleeping", url: "weather.preview", kind: "tab" },
-  { id: "essay", title: "A room of one's own", subtitle: "reading.preview", url: "reading.preview", kind: "tab" },
-  { id: "settings", title: "Open preferences", subtitle: "Change appearance, motion, and layout", kind: "action", action: "settings", reason: "Action" },
+  { id: "new-tab", title: "New tab", subtitle: "Create a tab in this Space", kind: "action", action: "new-tab", command: "doc.new", keywords: ["page", "tab"] },
+  { id: "new-folder", title: "New folder", subtitle: "Organize tabs in this Space", kind: "action", action: "new-folder", keywords: ["folder"] },
+  { id: "settings", title: "Open preferences", subtitle: "Change appearance, motion, and layout", kind: "action", action: "settings", keywords: ["preferences"] },
   { id: "spaces", title: "Change Space", subtitle: "Atelier, Gambit, Vigil, Drift, Ember", kind: "action", action: "spaces", reason: "Action" },
   { id: "split", title: "Toggle split view", subtitle: "Show two pages side by side", kind: "action", action: "split", reason: "Action" },
   { id: "private", title: "Enter private room", subtitle: "Temporary session concept", kind: "action", action: "private", reason: "Action" },
@@ -50,26 +92,190 @@ function announce(message) {
   toastTimer = window.setTimeout(() => toast.classList.remove("visible"), 3400);
 }
 
-function setMood(mood) {
-  if (!SPACE_MOODS.includes(mood)) return;
-  state.mood = mood;
-  state.private = mood === "vigil";
-  root.dataset.mood = mood;
-  $$(".space-chip").forEach((button) => {
-    const selected = button.dataset.mood === mood;
-    button.classList.toggle("selected", selected);
-    button.setAttribute("aria-pressed", String(selected));
+function getActiveSpace() {
+  return state.spaceRegistry.spaces.find((space) => space.id === state.spaceRegistry.activeSpaceId);
+}
+
+function renderSpaceCollections() {
+  const active = getActiveSpace();
+  if (!active) return;
+
+  const pinGrid = $("#pinGrid");
+  pinGrid.replaceChildren();
+  active.pins.forEach((item) => {
+    const pin = document.createElement("button");
+    pin.type = "button";
+    pin.className = "pin-tile";
+    pin.dataset.pinId = item.id;
+    pin.dataset.page = item.title;
+    pin.dataset.url = item.url;
+    const glyph = document.createElement("span");
+    glyph.className = "pin-glyph glyph-new";
+    glyph.textContent = "✳";
+    const label = document.createElement("span");
+    label.textContent = item.title;
+    pin.append(glyph, label);
+    pin.addEventListener("click", () => setPreviewPage(
+      item.title,
+      item.url,
+      "PINNED PLACE",
+      "A local preview for " + item.title + ". Website navigation is not connected.",
+    ));
+    pinGrid.append(pin);
   });
-  $("#breadcrumbSpace").textContent = moodCopy[mood].label;
+
+  const tabList = $("#tabList");
+  tabList.replaceChildren();
+  const expansion = state.folderExpansion[active.id] ?? {};
+  active.folders.forEach((folder, index) => {
+    const group = document.createElement("div");
+    group.className = "tab-group";
+    const folderTabs = active.tabs.filter((tab) =>
+      tab.folderId === folder.id || (tab.folderId == null && index === 0)
+    );
+
+    const header = document.createElement("button");
+    header.type = "button";
+    header.className = "folder-row";
+    header.dataset.folder = folder.id;
+    const isExpanded = expansion[folder.id] !== false;
+    header.setAttribute("aria-expanded", String(isExpanded));
+    const chevron = document.createElement("span");
+    chevron.className = "chevron";
+    chevron.textContent = isExpanded ? "⌄" : "›";
+    const name = document.createElement("span");
+    name.textContent = folder.name;
+    const count = document.createElement("span");
+    count.className = "folder-count";
+    count.textContent = String(folderTabs.length);
+    header.append(chevron, name, count);
+
+    const children = document.createElement("div");
+    children.className = "folder-children";
+    children.dataset.folderChildren = folder.id;
+    children.hidden = !isExpanded;
+
+    header.addEventListener("click", () => {
+      state.folderExpansion[active.id] ??= {};
+      const nextExpanded = !state.folderExpansion[active.id][folder.id] && state.folderExpansion[active.id][folder.id] !== undefined
+        ? true
+        : state.folderExpansion[active.id][folder.id] === undefined
+          ? false
+          : !state.folderExpansion[active.id][folder.id];
+      state.folderExpansion[active.id][folder.id] = nextExpanded;
+      header.setAttribute("aria-expanded", String(nextExpanded));
+      chevron.textContent = nextExpanded ? "⌄" : "›";
+      children.hidden = !nextExpanded;
+    });
+
+    folderTabs.forEach((tabData) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "tab-row";
+      row.dataset.tabId = tabData.id;
+      row.dataset.url = tabData.url;
+      const favicon = document.createElement("span");
+      favicon.className = "tab-favicon favicon-new";
+      favicon.textContent = tabData.title.slice(0, 1).toUpperCase();
+      const title = document.createElement("span");
+      title.className = "tab-title";
+      title.textContent = tabData.title;
+      row.append(favicon, title);
+      if (tabData.sleeping) {
+        const sleeping = document.createElement("span");
+        sleeping.className = "sleeping-mark";
+        sleeping.title = "Sleeping tab";
+        sleeping.textContent = "☾";
+        row.append(sleeping);
+      }
+      row.addEventListener("click", () => setActiveTab(tabData.id));
+      children.append(row);
+    });
+
+    group.append(header, children);
+    tabList.append(group);
+  });
+
+  const newTabRow = document.createElement("button");
+  newTabRow.type = "button";
+  newTabRow.className = "new-tab-row";
+  newTabRow.id = "newTab";
+  const plus = document.createElement("span");
+  plus.textContent = "＋";
+  const label = document.createElement("span");
+  label.textContent = "New tab";
+  const shortcut = document.createElement("kbd");
+  shortcut.textContent = "⌘ T";
+  newTabRow.append(plus, label, shortcut);
+  newTabRow.addEventListener("click", addTab);
+  tabList.append(newTabRow);
+
+  updateTabCounts();
+  if (active.tabs.some((tab) => tab.id === state.activeTab)) {
+    setActiveTab(state.activeTab);
+  } else if (active.tabs.length) {
+    setActiveTab(active.tabs[0].id);
+  } else {
+    state.activeTab = "";
+  }
+}
+
+function renderSpaceSwitcher() {
+  const nav = $("#spaceSwitcher");
+  nav.replaceChildren();
+  state.spaceRegistry.spaces.forEach((space, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `space-chip${space.id === state.spaceRegistry.activeSpaceId ? " selected" : ""}`;
+    button.dataset.spaceId = space.id;
+    button.dataset.mood = space.mood;
+    button.setAttribute("aria-pressed", String(space.id === state.spaceRegistry.activeSpaceId));
+
+    const dot = document.createElement("span");
+    dot.className = `space-dot dot-${space.mood}`;
+    const label = document.createElement("span");
+    label.textContent = space.name;
+    button.append(dot, label);
+
+    const shortcut = document.createElement("span");
+    shortcut.className = "space-shortcut";
+    shortcut.textContent = index < 5 ? String(index + 1) : "";
+    button.append(shortcut);
+    button.addEventListener("click", () => setActiveSpace(space.id));
+    nav.append(button);
+  });
+}
+
+function setActiveSpace(spaceId) {
+  const nextSpace = state.spaceRegistry.spaces.find((space) => space.id === spaceId);
+  if (!nextSpace) return;
+  state.spaceRegistry = activateSpace(state.spaceRegistry, spaceId);
+  state.mood = nextSpace.mood;
+  state.private = nextSpace.private;
+  root.dataset.mood = nextSpace.mood;
+  renderSpaceSwitcher();
+  state.activeTab = nextSpace.tabs[0]?.id ?? "";
+  renderSpaceCollections();
+
+  const mood = nextSpace.mood;
+  $("#breadcrumbSpace").textContent = nextSpace.name;
   $("#articleKicker").textContent = moodCopy[mood].overline;
   $("#articleTitle").innerHTML = `${escapeHtml(moodCopy[mood].title)}<br><em>${mood === "atelier" ? "of making" : mood === "gambit" ? "worth keeping" : mood === "vigil" ? "for yourself" : mood === "drift" ? "without hurry" : "close by"}</em>`;
   $("#articleDeck").textContent = moodCopy[mood].subtitle;
   $("#statusMood").textContent = `${mood.toUpperCase()} / ${state.theme.toUpperCase()}`;
-  $("#pageUrl").textContent = `nocturne.preview / ${mood}`;
+  $("#pageUrl").textContent = `nocturne.preview / ${nextSpace.id}`;
   $("#privateToggle").setAttribute("aria-pressed", String(state.private));
   $("#privateStatus").textContent = state.private ? "On" : "Off";
   $("#privateToggle").classList.toggle("private-on", state.private);
-  if (state.private) announce("Private room preview. This is not an isolated Chromium profile.");
+  $("#contentBlockingSetting").value = nextSpace.contentBlocking;
+
+  if (state.private) announce("Private room preview. Temporary storage is not enforced until Chromium profile isolation is implemented.");
+}
+
+function setMood(mood) {
+  if (!SPACE_MOODS.includes(mood)) return;
+  const matching = state.spaceRegistry.spaces.find((space) => space.mood === mood);
+  if (matching) setActiveSpace(matching.id);
 }
 
 function setTheme(theme) {
@@ -114,7 +320,9 @@ function setLanguage(language) {
     languageDesc: "معاينة التسميات العربية واتجاه الواجهة من اليمين إلى اليسار.",
     mirror: "عكس موضع الشريط الجانبي", mirrorDesc: "مفيد للقراءة من اليمين إلى اليسار.",
     texture: "الملمس", textureDesc: "حبيبات خفيفة على واجهة المتصفح فقط.",
-    local: "معاينة محلية", localDesc: "هذا النموذج لا يفتح مواقع حقيقية ولا ينشئ ملفات تعريف معزولة.", done: "تم",
+    local: "معاينة محلية", localDesc: "هذا النموذج لا يفتح مواقع حقيقية ولا ينشئ ملفات تعريف معزولة.",
+    cleanLinks: "تنظيف الروابط", cleanLinksDesc: "اقترح إزالة معرّفات التتبع المعروفة من الروابط.",
+    contentBlocking: "حظر المحتوى", contentBlockingDesc: "إعداد مستقل لهذه المساحة؛ الحظر الفعلي يتطلب محرك Chromium.", done: "تم",
     settingsTitle: "شكّل مساحتك.", settingsKicker: "نوكتورن / التفضيلات", commandPlaceholder: "ابحث في علامات التبويب أو اكتب أمرًا…", commandLabel: "ابحث أو أدخل أمرًا"
   } : {
     pins: "PINS", tabs: "TABS", today: "Today", reading: "Reading", newTab: "New tab",
@@ -127,7 +335,9 @@ function setLanguage(language) {
     languageDesc: "Preview Arabic labels and right-to-left chrome.",
     mirror: "Mirror sidebar", mirrorDesc: "Useful for Arabic and right-to-left reading.",
     texture: "Texture", textureDesc: "Subtle grain on browser chrome only.",
-    local: "Local preview", localDesc: "This prototype does not visit websites or create isolated browser profiles.", done: "Done",
+    local: "Local preview", localDesc: "This prototype does not visit websites or create isolated browser profiles.",
+    cleanLinks: "Clean links", cleanLinksDesc: "Choose whether known tracking parameters are suggested or removed in this preview.",
+    contentBlocking: "Content blocking", contentBlockingDesc: "A per-Space preference; actual filtering requires the Chromium engine.", done: "Done",
     settingsTitle: "Shape the room.", settingsKicker: "NOCTURNE / PREFERENCES", commandPlaceholder: "Search tabs, pages, or enter a command…", commandLabel: "Search or enter a command"
   };
   $("#pinsHeading").textContent = labels.pins;
@@ -158,6 +368,10 @@ function setLanguage(language) {
   $("#textureDescription").textContent = labels.textureDesc;
   $("#localLabel").textContent = labels.local;
   $("#localDescription").textContent = labels.localDesc;
+  $("#cleanLinksLabel").textContent = labels.cleanLinks;
+  $("#cleanLinksDescription").textContent = labels.cleanLinksDesc;
+  $("#contentBlockingLabel").textContent = labels.contentBlocking;
+  $("#contentBlockingDescription").textContent = labels.contentBlockingDesc;
   $("#doneSettings").textContent = labels.done;
   $("#settingsTitle").textContent = labels.settingsTitle;
   $("#settingsKicker").textContent = labels.settingsKicker;
@@ -192,6 +406,13 @@ function setReading(enabled) {
   announce(state.reading ? "Reading mode preview." : "Standard page view.");
 }
 
+function setCleanLinksMode(mode) {
+  state.cleanLinksMode = CLEAN_LINK_MODES.includes(mode) ? mode : "suggest";
+  $("#cleanLinksSetting").value = state.cleanLinksMode;
+  if ($("#commandDialog").open) renderSuggestions($("#commandInput").value);
+  announce(`Clean Links preview mode: ${state.cleanLinksMode}.`);
+}
+
 function openDialog(dialog) {
   if (!dialog.open) dialog.showModal();
 }
@@ -214,7 +435,23 @@ function openCommand() {
 }
 
 function renderSuggestions(query) {
-  suggestions = buildSuggestions(query, commandItems);
+  const active = getActiveSpace();
+  const activeItems = [
+    ...active.tabs.map((tab) => ({
+      id: tab.id,
+      title: tab.title,
+      subtitle: tab.url + (tab.sleeping ? " · Sleeping" : ""),
+      url: tab.url,
+      kind: "tab",
+      sleeping: tab.sleeping,
+    })),
+    ...commandItems.filter((item) => item.kind === "action"),
+  ];
+  suggestions = buildSuggestions(query, activeItems, {
+    cleanLinksMode: state.cleanLinksMode,
+    history: active.history,
+    bookmarks: active.pins,
+  });
   selectedSuggestion = 0;
   const results = $("#commandResults");
   results.replaceChildren();
@@ -234,7 +471,7 @@ function renderSuggestions(query) {
     row.dataset.index = String(index);
     const glyph = document.createElement("span");
     glyph.className = `result-glyph result-${item.kind}`;
-    glyph.textContent = item.kind === "calculator" ? "=" : item.kind === "address" ? "↗" : item.kind === "action" ? "⌘" : "◦";
+    glyph.textContent = item.kind === "calculator" ? "=" : item.kind === "clean-link" ? "✓" : item.kind === "address" ? "↗" : item.kind === "action" ? "⌘" : "◦";
     const copy = document.createElement("span");
     copy.className = "result-copy";
     const title = document.createElement("strong");
@@ -268,14 +505,25 @@ function chooseSuggestion(index = selectedSuggestion) {
   closeDialog("commandDialog");
   if (item.kind === "calculator") {
     announce(`${item.subtitle} = ${item.value}`);
-  } else if (item.kind === "address") {
-    setPreviewPage(item.value, item.value, "A page preview", "Address navigation is simulated here. Chromium navigation is not connected yet.");
+  } else if (item.kind === "address" || item.kind === "clean-link") {
+    const cleanLinkDeck = item.kind === "clean-link"
+      ? `Clean-link suggestion preview. Removed: ${item.removedParameters.join(", ")}. No real website was opened.`
+      : "Address navigation is simulated here. Chromium navigation is not connected yet.";
+    setPreviewPage(item.value, item.value, item.kind === "clean-link" ? "CLEAN LINK PREVIEW" : "A PAGE PREVIEW", cleanLinkDeck);
+  } else if (item.kind === "history" || item.kind === "bookmark") {
+    setPreviewPage(item.title, item.url, item.kind === "history" ? "HISTORY PREVIEW" : "BOOKMARK PREVIEW",
+      "This local record belongs to the active Space. Chromium navigation is not connected yet.");
+  } else if (item.kind === "search") {
+    setPreviewPage("Search preview", "search.local/" + encodeURIComponent(item.query), "SEARCH PREVIEW",
+      "Search request prepared for “" + item.query + "”. A search provider is not connected in this prototype.");
   } else if (item.kind === "action") {
+    if (item.action === "new-tab") addTab();
+    if (item.action === "new-folder") addFolder();
     if (item.action === "settings") openSettings();
     if (item.action === "split") setSplit(!state.split);
     if (item.action === "private") togglePrivate();
     if (item.action === "spaces") announce("Choose a Space from the bottom of the sidebar.");
-  } else {
+  } else if (item.kind === "tab") {
     setActiveTab(item.id);
   }
 }
@@ -293,6 +541,10 @@ function setActiveTab(tabId) {
   const tab = $(`[data-tab-id="${CSS.escape(tabId)}"]`);
   if (!tab) return;
   state.activeTab = tabId;
+  const activeSpace = getActiveSpace();
+  if (activeSpace?.tabs.some((item) => item.id === tabId)) {
+    state.spaceRegistry = setActiveTabInSpace(state.spaceRegistry, activeSpace.id, tabId, Date.now());
+  }
   $$(".tab-row").forEach((row) => row.classList.toggle("active", row.dataset.tabId === tabId));
   const title = $(".tab-title", tab).textContent;
   $("#breadcrumbPage").textContent = title;
@@ -302,51 +554,118 @@ function setActiveTab(tabId) {
   $("#pageUrl").textContent = `${tabId}.preview`;
 }
 
-function togglePrivate() {
-  state.private = !state.private;
-  if (state.private) setMood("vigil");
-  else {
-    if (state.mood === "vigil") setMood("atelier");
-    else {
-      $("#privateToggle").setAttribute("aria-pressed", "false");
-      $("#privateStatus").textContent = "Off";
-      $("#privateToggle").classList.remove("private-on");
-    }
+function createSpaceFromPrompt() {
+  const name = window.prompt("Name this Space");
+  if (!name?.trim()) return;
+
+  const normalized = name.trim();
+  const base = normalized.normalize("NFKD").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 44).replace(/-+$/g, "");
+  const prefix = base || "space";
+  let id = prefix;
+  let suffix = 2;
+  while (state.spaceRegistry.spaces.some((space) => space.id === id)) {
+    id = `${prefix}-${suffix++}`;
   }
-  announce(state.private ? "Private room preview enabled. Not real profile isolation." : "Private room preview closed.");
+
+  try {
+    state.spaceRegistry = addSpace(state.spaceRegistry, {
+      id,
+      name: normalized,
+      mood: state.mood,
+      private: false,
+      contentBlocking: "balanced",
+      folders: [{ id: "today", name: "Today" }],
+    });
+    setActiveSpace(id);
+    announce(`Space created: ${normalized}. Browser data isolation is not active in this preview.`);
+  } catch (error) {
+    announce(error instanceof Error ? error.message : "Could not create Space.");
+  }
 }
 
+function togglePrivate() {
+  const current = getActiveSpace();
+  if (current?.private) {
+    const persistent = state.spaceRegistry.spaces.find((space) => !space.private);
+    if (persistent) setActiveSpace(persistent.id);
+    announce("Private room preview closed. Real temporary-profile cleanup awaits Chromium integration.");
+    return;
+  }
+
+  const privateSpace = state.spaceRegistry.spaces.find((space) => space.private);
+  if (privateSpace) {
+    setActiveSpace(privateSpace.id);
+    announce("Private room preview enabled. Real temporary-profile isolation is not implemented yet.");
+  } else {
+    announce("No Private Space is configured.");
+  }
+}
+
+function setContentBlockingMode(mode) {
+  if (!CONTENT_BLOCKING_MODES.includes(mode)) return;
+  const active = getActiveSpace();
+  if (!active) return;
+  state.spaceRegistry = updateSpace(state.spaceRegistry, active.id, { contentBlocking: mode });
+  $("#contentBlockingSetting").value = mode;
+  announce(`${active.name}: content blocking set to ${mode} in the preview model.`);
+}
 function addTab() {
-  const id = `tab-${Date.now()}`;
-  const label = `Untitled ${$$(".tab-row").length + 1}`;
-  const row = document.createElement("button");
-  row.className = "tab-row active";
-  row.dataset.tabId = id;
-  row.innerHTML = `<span class="tab-favicon favicon-new">·</span><span class="tab-title"></span>`;
-  $(".tab-title", row).textContent = label;
-  row.addEventListener("click", () => setActiveTab(id));
-  const target = $("[data-folder-children='Today']");
-  target.append(row);
+  const active = getActiveSpace();
+  if (!active) return;
+  let folder = active.folders[0];
+  if (!folder) {
+    state.spaceRegistry = addFolderToSpace(state.spaceRegistry, active.id, { id: "today", name: "Today" });
+    folder = getActiveSpace().folders[0];
+  }
+  const id = "tab-" + Date.now().toString(36);
+  const title = "Untitled " + (active.tabs.length + 1);
+  state.spaceRegistry = addTabToSpace(state.spaceRegistry, active.id, {
+    id,
+    title,
+    url: "newtab.local/" + id,
+    folderId: folder.id,
+  });
+  state.activeTab = id;
+  renderSpaceCollections();
   setActiveTab(id);
-  updateTabCounts();
-  announce("A new blank tab preview was added.");
+  announce("A new tab was added to " + active.name + ".");
 }
 
 function addPin() {
+  const active = getActiveSpace();
+  if (!active) return;
   const name = window.prompt("Name this pin");
   if (!name?.trim()) return;
-  const pin = document.createElement("button");
-  pin.className = "pin-tile";
-  pin.dataset.page = name.trim();
-  const glyph = document.createElement("span");
-  glyph.className = "pin-glyph glyph-new";
-  glyph.textContent = "✳";
-  const text = document.createElement("span");
-  text.textContent = name.trim();
-  pin.append(glyph, text);
-  pin.addEventListener("click", () => setPreviewPage(name.trim(), "pin.preview", "PINNED PLACE", "This is a pin placeholder in the visual prototype."));
-  $("#pinGrid").append(pin);
-  announce(`Pinned ${name.trim()}.`);
+  const title = name.trim();
+  const base = title.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/g, "") || "pin";
+  let id = base;
+  let suffix = 2;
+  while (active.pins.some((pin) => pin.id === id)) id = base + "-" + suffix++;
+  state.spaceRegistry = addPinToSpace(state.spaceRegistry, active.id, {
+    id,
+    title,
+    url: base + ".local",
+  });
+  renderSpaceCollections();
+  announce("Pinned " + title + " in " + active.name + ".");
+}
+
+function addFolder() {
+  const active = getActiveSpace();
+  if (!active) return;
+  const name = window.prompt("Name this folder");
+  if (!name?.trim()) return;
+  const title = name.trim();
+  const base = title.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/g, "") || "folder";
+  let id = base;
+  let suffix = 2;
+  while (active.folders.some((folder) => folder.id === id)) id = base + "-" + suffix++;
+  state.spaceRegistry = addFolderToSpace(state.spaceRegistry, active.id, { id, name: title });
+  state.folderExpansion[active.id] ??= {};
+  state.folderExpansion[active.id][id] = true;
+  renderSpaceCollections();
+  announce("Folder created in " + active.name + ".");
 }
 
 function updateTabCounts() {
@@ -375,8 +694,8 @@ $$(".tab-row").forEach((button) => button.addEventListener("click", () => setAct
 $$(".pin-tile").forEach((button) => button.addEventListener("click", () => setPreviewPage(button.dataset.page, button.dataset.url, "PINNED PLACE", `A local preview for ${button.dataset.page}.`)));
 
 $("#omniboxButton").addEventListener("click", openCommand);
-$("#newTab").addEventListener("click", addTab);
 $("#addPin").addEventListener("click", addPin);
+$("#addFolder").addEventListener("click", addFolder);
 $("#themeToggle").addEventListener("click", () => setTheme(state.theme === "night" ? "day" : "night"));
 $("#daySetting").addEventListener("click", () => setTheme(state.theme === "night" ? "day" : "night"));
 $("#splitToggle").addEventListener("click", () => setSplit(!state.split));
@@ -386,8 +705,8 @@ $("#readingToggle").addEventListener("click", () => setReading(!state.reading));
 $("#privateToggle").addEventListener("click", togglePrivate);
 $("#settingsButton").addEventListener("click", openSettings);
 $("#settingsQuick").addEventListener("click", openSettings);
-$("#manageSpaces").addEventListener("click", () => announce("Five Space moods are available below."));
-$("#spaceDetails").addEventListener("click", () => announce(`${moodCopy[state.mood].label}: ${moodCopy[state.mood].subtitle}`));
+$("#manageSpaces").addEventListener("click", createSpaceFromPrompt);
+$("#spaceDetails").addEventListener("click", () => { const active = getActiveSpace(); announce(`${active.name} · ${active.contentBlocking} blocking · ${active.private ? "temporary" : "persistent"} preview`); });
 $("#sidebarMenu").addEventListener("click", () => announce("Sidebar docking controls will be connected to the desktop shell."));
 $("#pageMenu").addEventListener("click", () => announce("Page actions will be supplied by Chromium."));
 $("#copyAddress").addEventListener("click", async () => {
@@ -396,6 +715,8 @@ $("#copyAddress").addEventListener("click", async () => {
   catch { announce(value); }
 });
 $("#doneSettings").addEventListener("click", () => closeDialog("settingsDialog"));
+$("#cleanLinksSetting").addEventListener("change", (event) => setCleanLinksMode(event.target.value));
+$("#contentBlockingSetting").addEventListener("change", (event) => setContentBlockingMode(event.target.value));
 $$("[data-close]").forEach((button) => button.addEventListener("click", () => closeDialog(button.dataset.close)));
 $("#commandInput").addEventListener("input", (event) => renderSuggestions(event.target.value));
 $("#commandInput").addEventListener("keydown", (event) => {
@@ -435,4 +756,8 @@ $("#motionSetting").setAttribute("aria-checked", String(state.reducedMotion));
 root.classList.toggle("reduced-motion", state.reducedMotion);
 root.classList.toggle("no-texture", !state.texture);
 createSpaceState(state.mood); // Confirms the initial Space model is normalized by the shared core.
+$("#cleanLinksSetting").value = state.cleanLinksMode;
+renderSpaceSwitcher();
+renderSpaceCollections();
+$("#contentBlockingSetting").value = getActiveSpace().contentBlocking;
 updateTabCounts();

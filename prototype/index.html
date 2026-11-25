@@ -34,7 +34,7 @@
       </section>
 
       <section class="sidebar-section tabs-section" aria-labelledby="tabsHeading">
-        <div class="section-heading"><span id="tabsHeading">TABS</span><span class="section-count" id="tabCount">04</span></div>
+        <div class="section-heading"><span id="tabsHeading">TABS</span><span class="section-count" id="tabCount">04</span><button class="tiny-button" id="addFolder" aria-label="Add a folder" title="Add a folder">+</button></div>
         <div class="tab-list" id="tabList">
           <div class="tab-group">
             <button class="folder-row" aria-expanded="true" data-folder="Today"><span class="chevron">⌄</span><span>Today</span><span class="folder-count">3</span></button>
@@ -56,13 +56,7 @@
 
       <div class="sidebar-bottom">
         <div class="space-label-row"><span id="spacesHeading">SPACES</span><button class="tiny-button" id="manageSpaces" title="Manage Spaces" aria-label="Manage Spaces">···</button></div>
-        <nav class="space-switcher" id="spaceSwitcher" aria-label="Spaces">
-          <button class="space-chip selected" data-mood="atelier" aria-pressed="true"><span class="space-dot dot-atelier"></span><span>Atelier</span><span class="space-shortcut">1</span></button>
-          <button class="space-chip" data-mood="gambit" aria-pressed="false"><span class="space-dot dot-gambit"></span><span>Gambit</span><span class="space-shortcut">2</span></button>
-          <button class="space-chip" data-mood="vigil" aria-pressed="false"><span class="space-dot dot-vigil"></span><span>Vigil</span><span class="space-shortcut">3</span></button>
-          <button class="space-chip" data-mood="drift" aria-pressed="false"><span class="space-dot dot-drift"></span><span>Drift</span><span class="space-shortcut">4</span></button>
-          <button class="space-chip" data-mood="ember" aria-pressed="false"><span class="space-dot dot-ember"></span><span>Ember</span><span class="space-shortcut">5</span></button>
-        </nav>
+        <nav class="space-switcher" id="spaceSwitcher" aria-label="Spaces"></nav>
         <div class="sidebar-footer">
           <button class="footer-button" id="privateToggle" aria-pressed="false"><span class="footer-icon">◐</span><span id="privateLabel">Private room</span><span class="footer-status" id="privateStatus">Off</span></button>
           <button class="footer-button" id="settingsButton"><span class="footer-icon">⚙</span><span id="preferencesLabel">Preferences</span></button>
@@ -143,7 +137,7 @@
       <div class="settings-content">
         <section class="settings-group"><div class="settings-group-title"><span id="appearanceGroupLabel">APPEARANCE</span><small>01 / 03</small></div><div class="setting-row"><div><strong id="dayLabel">Day Study</strong><small id="dayDescription">A warm paper palette for daylight.</small></div><button class="switch" id="daySetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="contrastLabel">High contrast</strong><small id="contrastDescription">Sharper outlines, no grain or vignette.</small></div><button class="switch" id="contrastSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="motionLabel">Reduce motion</strong><small id="motionDescription">Replace sweeps with quiet fades.</small></div><button class="switch" id="motionSetting" role="switch" aria-checked="false"><span></span></button></div></section>
         <section class="settings-group"><div class="settings-group-title"><span id="layoutGroupLabel">LAYOUT</span><small>02 / 03</small></div><div class="setting-row"><div><strong id="languageLabel">Arabic interface</strong><small id="languageDescription">Preview Arabic labels and right-to-left chrome.</small></div><button class="switch" id="languageSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="mirrorLabel">Mirror sidebar</strong><small id="mirrorDescription">Useful for Arabic and right-to-left reading.</small></div><button class="switch" id="rtlSetting" role="switch" aria-checked="false"><span></span></button></div><div class="setting-row"><div><strong id="textureLabel">Texture</strong><small id="textureDescription">Subtle grain on browser chrome only.</small></div><button class="switch" id="textureSetting" role="switch" aria-checked="true"><span></span></button></div></section>
-        <section class="settings-group"><div class="settings-group-title"><span id="privacyGroupLabel">PRIVACY</span><small>03 / 03</small></div><div class="privacy-note"><span class="privacy-icon">◈</span><div><strong id="localLabel">Local preview</strong><p id="localDescription">This prototype does not visit websites, store browsing history, or create real isolated browser profiles. Those functions belong to the Chromium implementation.</p></div></div></section>
+        <section class="settings-group"><div class="settings-group-title"><span id="privacyGroupLabel">PRIVACY</span><small>03 / 03</small></div><div class="setting-row"><div><strong id="contentBlockingLabel">Content blocking</strong><small id="contentBlockingDescription">A per-Space preference; actual filtering requires the Chromium engine.</small></div><select class="settings-select" id="contentBlockingSetting" aria-label="Content blocking mode"><option value="off">Off</option><option value="balanced" selected>Balanced</option><option value="strict">Strict</option></select></div><div class="setting-row"><div><strong id="cleanLinksLabel">Clean links</strong><small id="cleanLinksDescription">Choose whether known tracking parameters are suggested or removed in this preview.</small></div><select class="settings-select" id="cleanLinksSetting" aria-label="Clean links mode"><option value="disable">Disable</option><option value="suggest" selected>Suggest</option><option value="auto-clean">Auto-clean</option></select></div><div class="privacy-note"><span class="privacy-icon">◈</span><div><strong id="localLabel">Local preview</strong><p id="localDescription">This prototype does not visit websites, store browsing history, or create real isolated browser profiles. Those functions belong to the Chromium implementation.</p></div></div></section>
       </div>
       <div class="settings-actions"><span>Changes apply to this preview.</span><button class="primary-button" id="doneSettings">Done</button></div>
     </div>

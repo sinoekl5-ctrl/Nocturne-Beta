@@ -1,0 +1,59 @@
+{
+  "record_schema": 1,
+  "status": "not-run",
+  "product": "Nocturne",
+  "created_at_utc": null,
+  "source": {
+    "nocturne_commit": null,
+    "platform": null,
+    "platform_repository": null,
+    "platform_commit": null,
+    "helium_root_commit": null,
+    "chromium_version": "158.0.8127.88",
+    "build_patch_series_commit": null
+  },
+  "host": {
+    "os_name": null,
+    "os_version_or_distro": null,
+    "kernel_or_build": null,
+    "architecture": null,
+    "cpu_model_and_cores": null,
+    "physical_ram_bytes": null,
+    "free_disk_bytes_before": null,
+    "filesystem": null,
+    "toolchain_versions": {},
+    "display_stack": null
+  },
+  "preparation": {
+    "command_log_path": null,
+    "command_exit_code": null,
+    "elapsed_seconds": null,
+    "prepared_source_sha": null,
+    "notes": []
+  },
+  "build": {
+    "command": null,
+    "command_log_path": null,
+    "exit_code": null,
+    "elapsed_seconds": null,
+    "output_directory": null,
+    "artifact_sha256": {},
+    "warnings_and_errors": []
+  },
+  "runtime_smoke": {
+    "launch_success": null,
+    "first_run_success": null,
+    "real_navigation_success": null,
+    "smoke_test_log_path": null,
+    "screenshots": [],
+    "crash_or_console_errors": [],
+    "known_blockers": []
+  },
+  "verification": {
+    "source_shas_match_lock": false,
+    "build_completed": false,
+    "launch_test_completed": false,
+    "reviewer": null,
+    "reviewed_at_utc": null
+  }
+}

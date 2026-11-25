@@ -6,8 +6,13 @@ This plan aligns the 25 November 2026 source audit with the requested Windows, L
 
 - **Phase 0 — Foundation:** repository, governance, license baseline, architecture and first CI complete.
 - **Phase 1 — Source/document audit:** pinned source metadata/trees/licenses/build docs and first-pass decisions complete; native build reproduction and SBOM remain open.
-- **Phase 2 — Visual prototype:** first local UI prototype implemented and unit-tested; human visual/accessibility review remains open.
-- **Phase 3 onward:** not started; no Chromium integration or runnable browser yet.
+- **Phase 2 — Visual prototype:** dependency-free visual prototype implemented; human visual/accessibility review remains open.
+- **Browser-core Clean Links:** Disable / Suggest / Auto-clean logic is implemented; the preview settings and command bar demonstrate the modes. It is not connected to Chromium navigation.
+- **Browser-core Spaces:** validated Space descriptors, immutable registry transitions, independent tabs/pins/folders/history, private-history rejection, private snapshot exclusion and close lifecycle are implemented. The visual prototype renders each Space's collections separately. These are metadata policies only; no Chromium profile or BrowserContext isolation exists yet.
+- **Browser-core Command Bar:** local matching for tabs, history, pins, actions, address detection, arithmetic and `doc.new` is implemented and wired to the preview.
+- **Tab lifecycle:** safe eligibility rules for background sleeping and a recoverable Recently Cleaned sweep are implemented as policy helpers; Chromium process actions are not wired.
+- **Split View:** a two/three-pane immutable layout model is implemented; Chromium WebContents composition is not wired. No external search or real navigation provider is connected.
+- **Phase 3 — Chromium integration:** a pre-integration JavaScript message contract exists on a separate review branch. No Chromium checkout, WebUI controller, C++ bridge, browser process or native browser build exists in the default branch.
 
 ## Phase 0 — Foundations (brief estimate: about 1 week)
 
@@ -22,13 +27,13 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 - Inspected the five candidate repositories' public metadata, default-branch trees, READMEs, licenses and selected source/build documents.
 - Pinned each candidate's `main` commit and all three Helium platform-packaging repositories.
 - Corrected stale platform assumptions: current Ardia has Linux Chromium-hosted UI work and Windows alpha/WebUI work; its Windows history and docs include hardware and feature limitations.
-- Recorded the difference between Helium's current main Chromium pin (`158.0.8127.88`) and the Ardia document's engine pin (`158.0.8127.36` + Helium 0.22.2).
+- Recorded the difference between Helium's current main Chromium pin (`158.0.8127.88`) and the Ardia engine pin (`158.0.8127.36` + Helium 0.22.2).
 - Scored initial Adopt / Port / Specify / Skip decisions in the source audit.
 
 ### Remaining
 
 1. Clone the pinned repositories into a dedicated audit workspace and generate a machine-readable SBOM.
-2. Establish a matching Chromium + Helium + macOS/Linux/Windows packaging revision set; do not combine mismatched upstream versions.
+2. Establish a matching Chromium + Helium + macOS/Linux/Windows packaging revision set; do not combine mismatched versions.
 3. Build and run the engine on representative native environments. Record exact OS, CPU, disk, RAM, elapsed time, failures and output hashes.
 4. Validate the proposed Chromium WebUI integration and native bridge trust boundary on each platform.
 5. Complete file-level license/provenance review and legal review before binary distribution.
@@ -43,7 +48,7 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 - Sidebar, address/command entry, pins, sample tabs/folders, Space switcher and five mood tokens.
 - Command palette filtering sample tabs/actions, address preview, and safe arithmetic parser (no `eval`).
 - Split view, reading-mode concept, private-room visual state, Day Study, high contrast, reduced motion, texture controls and RTL mirroring.
-- Unit tests for calculator parsing, address recognition, suggestions and Space normalization.
+- Clean Links mode selector in Preferences, with preview-only command-bar behavior.
 
 ### Remaining
 
@@ -54,6 +59,16 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 
 **Exit:** design sign-off, five moods and key states reviewed, accessibility/RTL/motion acceptance passed, no unlicensed assets.
 
+## Browser-core feature work
+
+### Clean Links
+
+The pure module removes only known tracking parameters, preserves unknown and functional query values, and exposes Disable / Suggest / Auto-clean. Its user preference is shown in the prototype. Remaining: connect it to the browser-process navigation pipeline and a real per-Space preference, then add Chromium navigation tests for redirects, forms and history semantics.
+
+### Spaces
+
+The core model validates Space IDs, names, mood and content-blocking mode; manages an immutable registry; keeps privacy mode immutable after creation; excludes Private Spaces from persisted snapshots; and removes temporary Spaces on close. Remaining: map each persistent Space to a distinct Chromium profile/BrowserContext, map Private Spaces to temporary storage, implement focus-loss relocking, and prove no leakage of cookies, local storage, cache, service workers, permissions, downloads or history.
+
 ## Phase 3 — Chromium engine base (brief estimate: 2–4 weeks after audit)
 
 - Pin Chromium source, Helium root and matching platform package revisions.
@@ -62,7 +77,7 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 - Prove origin/frame checks and deny calls from ordinary web pages.
 - Apply Nocturne application identity without copying Helium branding; keep Nocturne patches distinct.
 
-**Exit:** installable browser alpha with real navigation and a minimal shared shell on Windows, Linux and macOS; smoke tests pass on each platform. This is not satisfied by the current visual prototype.
+**Exit:** installable browser alpha with real navigation and a minimal shared shell on Windows, Linux and macOS; smoke tests pass on each platform. This is not satisfied by the visual prototype or pure JavaScript tests.
 
 ## Phase 4 — Shell and Spaces (brief estimate: 6–12 weeks)
 
@@ -72,7 +87,7 @@ Implement real Chromium-backed tabs, pins, folders, sessions, split view, Peek a
 
 ## Phase 5 — Privacy and import (brief estimate: 3–5 weeks)
 
-Integrate the approved, license-reviewed blocker/filter-list path; URL cleaner with Disable/Suggest/Auto-clean modes; selected safe importers; local Insights; onboarding.
+Integrate the approved, license-reviewed blocker/filter-list path; complete the Clean Links browser integration; add selected safe importers, local Insights and onboarding.
 
 **Exit:** tested import without data loss, readable privacy controls, Insights local-only, no telemetry by default.
 

@@ -4,7 +4,7 @@
 
 Nocturne is a planned desktop browser for **Windows, Linux and macOS**. Its engine direction is a cross-platform Chromium foundation informed by [Helium](https://github.com/imputnet/helium). The product shell is intended to be shared across platforms, with narrowly scoped native adapters.
 
-> **Project status (25 November 2026):** foundation and first source audit are committed; a dependency-free visual/interaction prototype can be run locally. **This is not yet a browser:** there is no Chromium checkout, browser process, real navigation, secure profile isolation, installer or release build in this repository.
+> **Project status (25 November 2026):** foundation, source audit and dependency-free visual prototype are committed. The browser-core now includes the three-mode Clean Links logic, a Spaces model with per-room collections and history rules, an omnibox matcher for tabs, history, pins, actions, addresses and arithmetic, a conservative tab sleep/Recently Cleaned policy, and a two/three-pane Split View state model. **This is not yet a browser:** there is no Chromium checkout, browser process, real website navigation, enforced profile isolation, installer or release build in the default branch. Feature branches remain under review.
 
 ## Run the prototype
 
@@ -16,14 +16,16 @@ npm run dev
 
 Open `http://127.0.0.1:4173`.
 
-The prototype demonstrates the sidebar, command bar (`Ctrl/Cmd + L`), sample tabs/folders, pins, five Space moods, split-view concept, reading mode, Day Study, high contrast, reduced motion and RTL mirroring. It uses original CSS illustration only. Its page is a static mockup and it makes no external website requests. “Private room” is a visual state, not a security boundary. See [prototype/README.md](prototype/README.md).
+The prototype demonstrates the sidebar, command bar (`Ctrl/Cmd + L`), sample tabs/folders, pins, five Space moods, split-view concept, reading mode, Day Study, high contrast, reduced motion, RTL mirroring and a preview of the Clean Links modes. It uses original CSS illustration only. Its page is a static mockup and it makes no external website requests. “Private room” remains a visual state, not a security boundary. See [prototype/README.md](prototype/README.md).
 
-Run local checks:
+## Run checks
 
 ```sh
 npm test
 python scripts/validate_foundation.py
 ```
+
+After a native Chromium/Helium build exists, run the [clean-profile HTTPS smoke test](docs/browser-smoke-test.md) against its executable. It verifies launch and rendered DOM output; it is not a release certification.
 
 ## Product principles
 
@@ -43,24 +45,35 @@ python scripts/validate_foundation.py
 
 ## Current architecture direction
 
-1. **L0 — Engine:** pinned Chromium source built through a compatible Helium patch/tooling set and the matching platform packaging repositories.
+1. **L0 — Engine:** pinned Chromium source built through a compatible Helium patch/tooling set and matching platform packaging repositories.
 2. **L1 — Privacy and hardening:** de-Googling, content blocking, filter lists and privacy flags.
 3. **L2 — Browser core:** Spaces, storage isolation, omnibox, URL rules and tab lifecycle.
 4. **L3 — Shell and interface:** a Nocturne-owned shared Chromium WebUI candidate, with narrow OS adapters.
 5. **L4 — Features and services:** importers, updates and command actions.
 6. **L5 — Internal pages:** start page, settings, Insights and onboarding.
 
-The cross-platform Chromium WebUI direction is a **proposed architecture** awaiting a real `chrome://nocturne/` integration/security spike. See [ADR 0003](docs/decisions/0003-cross-platform-shell.md). It is informed by Ardia's current Linux/Windows WebUI work but does not copy Ardia code.
+The Chromium WebUI direction remains a **proposed architecture**. A JavaScript message-contract spike exists on a separate review branch; it does not register a Chromium controller or enforce browser-process security. See [ADR 0003](docs/decisions/0003-cross-platform-shell.md).
+
+## Core feature contracts
+
+- [Clean Links](docs/features/url-cleaner.md) — local Disable / Suggest / Auto-clean query-parameter policy; not yet connected to Chromium navigation.
+- [Spaces](docs/features/spaces.md) — validated metadata, per-room tabs/pins/folders/history, and private-room lifecycle policy; Chromium profile isolation is not implemented.
+- [Command Bar](docs/features/command-bar.md) — local matching for tabs, history, pins, commands and calculator; search/navigation providers are not connected.
+- [Tab lifecycle](docs/features/tab-lifecycle.md) — tested sleep eligibility and recoverable Recently Cleaned candidate selection; no Chromium renderer is frozen.
+- [Split View](docs/features/split-view.md) — state model for two or three panes; no native WebContents are composed yet.
 
 ## Source audit
 
-The five candidate repositories have been inspected and pinned. The audit records their actual current platform/build status, license notes and first-pass Adopt / Port / Specify / Skip decisions:
+The five candidate repositories have been inspected and pinned. The audit records their observed platform/build status, license notes and Adopt / Port / Specify / Skip decisions:
 
 - [Source audit, 25 November 2026](docs/audits/2026-11-25-source-audit.md)
 - [Immutable upstream pins](docs/third-party/upstream-pins.csv)
 - [Architecture](docs/architecture.md)
+- [Engine source lock and build readiness](docs/engine-build-readiness.md)
+- [Native engine build runbook](docs/native-engine-build-runbook.md)
+- [Manual native build workflow](.github/workflows/native-engine-build.yml)
 
-The latest audited Helium `main` pin names Chromium **158.0.8127.88**. Ardia's current engine-build document uses Chromium **158.0.8127.36** with Helium **0.22.2**; those are not interchangeable pin sets. Nocturne must reproduce one coherent set before starting a browser build.
+The audited Helium root pin names Chromium **158.0.8127.88**. Ardia's audited engine-build document uses Chromium **158.0.8127.36** with Helium **0.22.2**; those are not interchangeable pin sets. Nocturne must reproduce one coherent set before starting a browser build.
 
 ## Five Space moods
 
@@ -81,13 +94,15 @@ No second rendering engine, mandatory AI, vendor-operated cloud sync or mobile a
 ## Repository map
 
 ```text
-.github/workflows/       Foundation + prototype checks
+.github/workflows/       Foundation + cross-platform core checks
+browser-core/             Dependency-free browser logic and policy models
 prototype/                Dependency-free visual/interaction prototype
-scripts/                   Local serving and repository validation
-tests/                     Node tests for pure browser-core helpers
+scripts/                  Local serving and repository validation
+tests/                    Node tests for core helpers and policy models
 docs/audits/              Dated upstream/source audit
- docs/decisions/          Architecture decision records
- docs/design/             Visual prototype specification
+docs/decisions/           Architecture decision records
+docs/design/              Visual prototype specification
+docs/features/            User-visible feature contracts and enforcement boundaries
 docs/third-party/         Immutable source pins and provenance
 ```
 

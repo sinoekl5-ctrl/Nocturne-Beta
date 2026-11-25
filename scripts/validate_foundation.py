@@ -10,7 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = (
     "README.md", "LICENSE", "NOTICE", "CONTRIBUTING.md", "SECURITY.md",
     "package.json", "prototype/index.html", "prototype/styles.css", "prototype/app.js",
-    "prototype/core.mjs", "scripts/serve.mjs", "tests/core.test.mjs",
+    "prototype/core.mjs", "browser-core/spaces.mjs", "scripts/serve.mjs",
+    "tests/core.test.mjs", "tests/spaces.test.mjs", "tests/url-cleaner.test.mjs", "tests/omnibox.test.mjs", "tests/tab-lifecycle.test.mjs", "tests/split-view.test.mjs",
+    "browser-core/url-cleaner.mjs", "browser-core/omnibox.mjs", "browser-core/tab-lifecycle.mjs", "browser-core/split-view.mjs", "docs/features/spaces.md", "docs/features/url-cleaner.md", "docs/features/command-bar.md", "docs/features/tab-lifecycle.md", "docs/features/split-view.md",
     "docs/architecture.md", "docs/implementation-plan.md", "docs/phase-0-checklist.md",
     "docs/decisions/0001-platforms-and-build-direction.md",
     "docs/decisions/0002-license-and-third-party-material.md",

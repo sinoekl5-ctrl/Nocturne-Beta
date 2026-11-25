@@ -1,0 +1,190 @@
+name: Native engine build (manual, self-hosted)
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Native host to build on (runner must be provisioned)
+        required: true
+        type: choice
+        options:
+          - Linux
+          - Windows
+          - macOS
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    if: inputs.platform == 'Linux'
+    runs-on: [self-hosted, nocturne-engine, linux, x64]
+    timeout-minutes: 360
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify pinned sources
+        run: python scripts/engine/checkout.py --platform Linux --workspace "$RUNNER_TEMP/nocturne-engine"
+      - name: Build and package pinned Helium
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          free_before=$(df -Pk "$RUNNER_TEMP" | awk 'NR==2 {printf "%.0f", $4*1024}')
+          start=$(date +%s)
+          cd "$RUNNER_TEMP/nocturne-engine/linux"
+          scripts/docker-build.sh 2>&1 | tee "$RUNNER_TEMP/nocturne-linux-build.log"
+          scripts/package.sh 2>&1 | tee -a "$RUNNER_TEMP/nocturne-linux-build.log"
+          elapsed=$(($(date +%s)-start))
+          echo "free_disk_before=$free_before" >> "$GITHUB_OUTPUT"
+          echo "elapsed_seconds=$elapsed" >> "$GITHUB_OUTPUT"
+      - name: Capture build evidence
+        shell: bash
+        env:
+          FREE_DISK_BEFORE: ${{ steps.build.outputs.free_disk_before }}
+          ELAPSED_SECONDS: ${{ steps.build.outputs.elapsed_seconds }}
+        run: |
+          set -euo pipefail
+          pkg="$RUNNER_TEMP/nocturne-engine/linux/build/release"
+          args=(--platform Linux --workspace "$RUNNER_TEMP/nocturne-engine" --build-log "$RUNNER_TEMP/nocturne-linux-build.log" --build-command "scripts/docker-build.sh && scripts/package.sh" --elapsed-seconds "$ELAPSED_SECONDS" --free-disk-before "$FREE_DISK_BEFORE" --output "$RUNNER_TEMP/nocturne-engine-build-record.json")
+          for file in "$pkg"/*.AppImage "$pkg"/*.tar.xz; do
+            [[ -f "$file" ]] && args+=(--artifact "$file")
+          done
+          python scripts/engine/capture_build_record.py "${args[@]}"
+          python scripts/validate_engine_build_record.py "$RUNNER_TEMP/nocturne-engine-build-record.json"
+      - name: Upload build log and packages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-engine-linux-evidence
+          path: |
+            ${{ runner.temp }}/nocturne-linux-build.log
+            ${{ runner.temp }}/nocturne-engine-build-record.json
+            ${{ runner.temp }}/nocturne-engine/linux/build/release/*.AppImage
+            ${{ runner.temp }}/nocturne-engine/linux/build/release/*.tar.xz
+          if-no-files-found: warn
+          retention-days: 7
+
+  windows:
+    if: inputs.platform == 'Windows'
+    runs-on: [self-hosted, nocturne-engine, windows, x64]
+    timeout-minutes: 360
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify pinned sources
+        shell: pwsh
+        run: python scripts/engine/checkout.py --platform Windows --workspace "$env:RUNNER_TEMP\nocturne-engine"
+      - name: Build and package pinned Helium
+        id: build
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $log = "$env:RUNNER_TEMP\nocturne-windows-build.log"
+          $drive = ([System.IO.Path]::GetPathRoot($env:RUNNER_TEMP) -replace '[:\\]', '')
+          $freeBefore = (Get-PSDrive -Name $drive).Free
+          $timer = [System.Diagnostics.Stopwatch]::StartNew()
+          Start-Transcript -Path $log
+          function Invoke-CheckedPython {
+            param([string[]]$Arguments)
+            & python @Arguments
+            if ($LASTEXITCODE -ne 0) {
+              throw "python $($Arguments -join ' ') failed with exit code $LASTEXITCODE"
+            }
+          }
+          try {
+            Set-Location "$env:RUNNER_TEMP\nocturne-engine\windows"
+            Invoke-CheckedPython -Arguments @('build.py')
+            Invoke-CheckedPython -Arguments @('package.py')
+          } finally {
+            Stop-Transcript
+            $timer.Stop()
+            "free_disk_before=$freeBefore" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            "elapsed_seconds=$([math]::Ceiling($timer.Elapsed.TotalSeconds))" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+      - name: Capture build evidence
+        shell: pwsh
+        env:
+          FREE_DISK_BEFORE: ${{ steps.build.outputs.free_disk_before }}
+          ELAPSED_SECONDS: ${{ steps.build.outputs.elapsed_seconds }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = "$env:RUNNER_TEMP\nocturne-engine\windows"
+          $log = "$env:RUNNER_TEMP\nocturne-windows-build.log"
+          $files = Get-ChildItem -Path "$root\build" -File -Recurse | Where-Object { $_.Extension -in '.exe','.zip','.msi' }
+          $args = @('--platform','Windows','--workspace',"$env:RUNNER_TEMP\nocturne-engine",'--build-log',$log,'--build-command','python build.py && python package.py','--elapsed-seconds',$env:ELAPSED_SECONDS,'--free-disk-before',$env:FREE_DISK_BEFORE,'--output',"$env:RUNNER_TEMP\nocturne-engine-build-record.json")
+          foreach ($file in $files) { $args += @('--artifact',$file.FullName) }
+          python scripts/engine/capture_build_record.py @args
+          python scripts/validate_engine_build_record.py "$env:RUNNER_TEMP\nocturne-engine-build-record.json"
+      - name: Upload build log and packages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-engine-windows-evidence
+          path: |
+            ${{ runner.temp }}/nocturne-windows-build.log
+            ${{ runner.temp }}/nocturne-engine-build-record.json
+            ${{ runner.temp }}/nocturne-engine/windows/build/*.exe
+            ${{ runner.temp }}/nocturne-engine/windows/build/*.zip
+            ${{ runner.temp }}/nocturne-engine/windows/build/**/*.msi
+          if-no-files-found: warn
+          retention-days: 7
+
+  macos:
+    if: inputs.platform == 'macOS'
+    runs-on: [self-hosted, nocturne-engine, macOS]
+    timeout-minutes: 360
+    steps:
+      - name: Check out Nocturne
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify pinned sources
+        run: python scripts/engine/checkout.py --platform macOS --workspace "$RUNNER_TEMP/nocturne-engine"
+      - name: Build pinned Helium
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          free_before=$(df -Pk "$RUNNER_TEMP" | awk 'NR==2 {printf "%.0f", $4*1024}')
+          start=$(date +%s)
+          cd "$RUNNER_TEMP/nocturne-engine/macos"
+          ./build.sh 2>&1 | tee "$RUNNER_TEMP/nocturne-macos-build.log"
+          elapsed=$(($(date +%s)-start))
+          echo "free_disk_before=$free_before" >> "$GITHUB_OUTPUT"
+          echo "elapsed_seconds=$elapsed" >> "$GITHUB_OUTPUT"
+      - name: Capture build evidence
+        shell: bash
+        env:
+          FREE_DISK_BEFORE: ${{ steps.build.outputs.free_disk_before }}
+          ELAPSED_SECONDS: ${{ steps.build.outputs.elapsed_seconds }}
+        run: |
+          set -euo pipefail
+          pkg="$RUNNER_TEMP/nocturne-engine/macos/build"
+          args=(--platform macOS --workspace "$RUNNER_TEMP/nocturne-engine" --build-log "$RUNNER_TEMP/nocturne-macos-build.log" --build-command "./build.sh" --elapsed-seconds "$ELAPSED_SECONDS" --free-disk-before "$FREE_DISK_BEFORE" --output "$RUNNER_TEMP/nocturne-engine-build-record.json")
+          for file in "$pkg"/*.dmg; do
+            [[ -f "$file" ]] && args+=(--artifact "$file")
+          done
+          python scripts/engine/capture_build_record.py "${args[@]}"
+          python scripts/validate_engine_build_record.py "$RUNNER_TEMP/nocturne-engine-build-record.json"
+      - name: Upload build log and package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocturne-engine-macos-evidence
+          path: |
+            ${{ runner.temp }}/nocturne-macos-build.log
+            ${{ runner.temp }}/nocturne-engine-build-record.json
+            ${{ runner.temp }}/nocturne-engine/macos/build/*.dmg
+          if-no-files-found: warn
+          retention-days: 7
