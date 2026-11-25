@@ -376,8 +376,8 @@ function createSpaceFromPrompt() {
   if (!name?.trim()) return;
 
   const normalized = name.trim();
-  const base = normalized.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 44).replace(/-+$/g, "");
+  const base = normalized.normalize("NFKD").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 44).replace(/-+$/g, "");
   const prefix = base || "space";
   let id = prefix;
   let suffix = 2;
@@ -426,19 +426,6 @@ function setContentBlockingMode(mode) {
   $("#contentBlockingSetting").value = mode;
   announce(`${active.name}: content blocking set to ${mode} in the preview model.`);
 }
-  state.private = !state.private;
-  if (state.private) setMood("vigil");
-  else {
-    if (state.mood === "vigil") setMood("atelier");
-    else {
-      $("#privateToggle").setAttribute("aria-pressed", "false");
-      $("#privateStatus").textContent = "Off";
-      $("#privateToggle").classList.remove("private-on");
-    }
-  }
-  announce(state.private ? "Private room preview enabled. Not real profile isolation." : "Private room preview closed.");
-}
-
 function addTab() {
   const id = `tab-${Date.now()}`;
   const label = `Untitled ${$$(".tab-row").length + 1}`;
