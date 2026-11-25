@@ -19,6 +19,7 @@ REQUIRED_FILES = (
     "docs/third-party/README.md", "docs/third-party/provenance.csv",
     "docs/third-party/upstream-pins.csv", "docs/third-party/helium-engine-baseline.md",
     "packages/core/url-cleaner.mjs", "tests/url-cleaner.test.mjs", "tests/url-cleaner-ui.test.mjs", "docs/core/url-cleaner.md",
+    "packages/core/webui-bridge-contract.mjs", "tests/webui-bridge-contract.test.mjs", "docs/security/webui-bridge-contract.md",
 )
 PROVENANCE_FIELDS = (
     "local_path", "upstream_project", "upstream_repository", "upstream_commit",
