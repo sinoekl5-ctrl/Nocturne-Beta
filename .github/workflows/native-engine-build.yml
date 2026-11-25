@@ -55,6 +55,7 @@ jobs:
             [[ -f "$file" ]] && args+=(--artifact "$file")
           done
           python scripts/engine/capture_build_record.py "${args[@]}"
+          python scripts/validate_engine_build_record.py "$RUNNER_TEMP/nocturne-engine-build-record.json"
       - name: Upload build log and packages
         if: always()
         uses: actions/upload-artifact@v4
@@ -122,6 +123,7 @@ jobs:
           $args = @('--platform','Windows','--workspace',"$env:RUNNER_TEMP\nocturne-engine",'--build-log',$log,'--build-command','python build.py && python package.py','--elapsed-seconds',$env:ELAPSED_SECONDS,'--free-disk-before',$env:FREE_DISK_BEFORE,'--output',"$env:RUNNER_TEMP\nocturne-engine-build-record.json")
           foreach ($file in $files) { $args += @('--artifact',$file.FullName) }
           python scripts/engine/capture_build_record.py @args
+          python scripts/validate_engine_build_record.py "$env:RUNNER_TEMP\nocturne-engine-build-record.json"
       - name: Upload build log and packages
         if: always()
         uses: actions/upload-artifact@v4
@@ -174,6 +176,7 @@ jobs:
             [[ -f "$file" ]] && args+=(--artifact "$file")
           done
           python scripts/engine/capture_build_record.py "${args[@]}"
+          python scripts/validate_engine_build_record.py "$RUNNER_TEMP/nocturne-engine-build-record.json"
       - name: Upload build log and package
         if: always()
         uses: actions/upload-artifact@v4
