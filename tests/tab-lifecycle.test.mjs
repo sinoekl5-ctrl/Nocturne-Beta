@@ -69,8 +69,8 @@ test("Recently Cleaned archives the oldest untouched eligible tabs and keeps one
     { ...idleTab, id: "fresh", lastActiveAt: now - 500 },
   ];
   const result = sweepUntouchedTabs(tabs, { now, untouchedThresholdMs: threshold });
-  assert.deepEqual(result.archiveEntries.map((entry) => entry.tab.id), ["oldest"]);
-  assert.equal(result.remainingTabs.length, 4);
+  assert.deepEqual(result.archiveEntries.map((entry) => entry.tab.id), ["oldest", "older"]);
+  assert.equal(result.remainingTabs.length, 3);
   assert.equal(result.remainingTabs.some((tab) => tab.active), true);
   assert.equal(result.remainingTabs.some((tab) => tab.pinned), true);
 });
