@@ -226,3 +226,14 @@ kbd { display: inline-grid; min-width: 22px; height: 19px; place-items: center; 
 .peek-url { margin-top: 14px; color: var(--accent); font: 10px ui-monospace, monospace; }
 .peek-actions { justify-content: flex-end; padding-top: 2px; }
 @media (prefers-reduced-motion: reduce) { .peek-dialog::backdrop { backdrop-filter: none; } }
+
+/* Split View local interaction preview; Chromium contents are not attached. */
+.focus-first-pane[hidden] { display: none; }
+.second-pane-inner h2 { overflow-wrap: anywhere; }
+.second-pane-url { margin: 12px 0 0; color: var(--accent); font: 10px ui-monospace, monospace; }
+.second-pane-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.pane-action.secondary { background: transparent; border: 1px solid var(--line); color: var(--chrome-muted); }
+.pane-note { margin: 16px 0 0; color: var(--chrome-muted); font-size: 10px; line-height: 1.6; }
+.web-page.pane-focused, .second-pane.pane-focused { outline: 2px solid color-mix(in srgb, var(--accent) 62%, transparent); outline-offset: -3px; }
+.second-pane.pane-focused .second-pane-head { color: var(--accent); }
+.page-stage[data-active-pane="2"] .split-divider { background: color-mix(in srgb, var(--accent) 40%, var(--line)); }

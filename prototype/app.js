@@ -16,6 +16,7 @@ const state = {
   reading: false,
   activeTab: "studio",
   activePane: 1,
+  secondPanePage: 0,
   folders: { Today: true, Reading: true },
 };
 
@@ -176,6 +177,24 @@ function setTexture(enabled) {
   $("#textureSetting").setAttribute("aria-checked", String(state.texture));
 }
 
+const splitPreviewPages = [{ title: "Atlas of small ideas", url: "atlas.preview", deck: "A collection of small observations, connected by curiosity." }, { title: "Weather & light", url: "weather.preview", deck: "A local sample page for comparing context side by side." }, { title: "A room of one’s own", url: "reading.preview", deck: "A quiet reading sample kept separate from the first pane." }];
+function renderSecondPanePage(index = state.secondPanePage) {
+  state.secondPanePage = (index + splitPreviewPages.length) % splitPreviewPages.length;
+  const page = splitPreviewPages[state.secondPanePage];
+  $("#secondPaneTitle").textContent = page.title;
+  $("#secondPaneUrl").textContent = page.url;
+  $("#secondPaneDeck").textContent = page.deck;
+  $("#secondPane").setAttribute("aria-label", `Second preview pane: ${page.title}`);
+}
+function focusPane(number) {
+  state.activePane = number;
+  $("#pageStage").dataset.activePane = String(number);
+  $("#webPage").classList.toggle("pane-focused", number === 1 && state.split);
+  $("#secondPane").classList.toggle("pane-focused", number === 2 && state.split);
+  $("#focusFirstPane").setAttribute("aria-pressed", String(number === 1));
+  $("#focusSecondPane").setAttribute("aria-pressed", String(number === 2));
+  announce(number === 1 ? "First preview pane focused." : "Second preview pane focused.");
+}
 function setSplit(enabled) {
   state.split = Boolean(enabled);
   $("#secondPane").hidden = !state.split;
@@ -183,7 +202,10 @@ function setSplit(enabled) {
   $("#splitToggle").classList.toggle("is-active", state.split);
   $("#splitToggle").setAttribute("aria-pressed", String(state.split));
   $("#pageContentGrid").classList.toggle("split-active", state.split);
-  announce(state.split ? "Split view preview opened." : "Split view closed.");
+  $("#focusFirstPane").hidden = !state.split;
+  if (state.split) { renderSecondPanePage(); focusPane(state.activePane === 2 ? 2 : 1); }
+  else { state.activePane = 1; $("#pageStage").dataset.activePane = "1"; $("#webPage").classList.remove("pane-focused"); $("#secondPane").classList.remove("pane-focused"); }
+  announce(state.split ? "Split view preview opened. Both panes are local samples." : "Split view closed.");
 }
 
 function setReading(enabled) {
@@ -398,6 +420,9 @@ $("#addPin").addEventListener("click", addPin);
 $("#themeToggle").addEventListener("click", () => setTheme(state.theme === "night" ? "day" : "night"));
 $("#daySetting").addEventListener("click", () => setTheme(state.theme === "night" ? "day" : "night"));
 $("#splitToggle").addEventListener("click", () => setSplit(!state.split));
+$("#focusFirstPane").addEventListener("click", () => focusPane(1));
+$("#focusSecondPane").addEventListener("click", () => focusPane(2));
+$("#nextSecondPane").addEventListener("click", () => { renderSecondPanePage(state.secondPanePage + 1); focusPane(2); });
 $("#closeSplit").addEventListener("click", () => setSplit(false));
 $("#focusSecondPane").addEventListener("click", () => { state.activePane = 2; announce("Second pane selected."); });
 $("#readingToggle").addEventListener("click", () => setReading(!state.reading));

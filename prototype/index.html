@@ -88,7 +88,7 @@
       <div class="page-stage" id="pageStage">
         <div class="page-toolbar">
           <div class="page-location"><span class="secure-mark">◇</span><span id="pageUrl">nocturne.preview / atelier</span><span class="preview-chip">LOCAL PREVIEW</span></div>
-          <div class="page-tools"><button class="page-tool" id="peekButton" aria-haspopup="dialog" aria-controls="peekDialog" title="Peek a related page">Peek</button><button class="page-tool" id="copyAddress" title="Copy preview address">Copy address</button><button class="page-tool" id="pageMenu" title="Page options">···</button></div>
+          <div class="page-tools"><button class="page-tool focus-first-pane" id="focusFirstPane" aria-pressed="true" hidden>Focus first</button><button class="page-tool" id="peekButton" aria-haspopup="dialog" aria-controls="peekDialog" title="Peek a related page">Peek</button><button class="page-tool" id="copyAddress" title="Copy preview address">Copy address</button><button class="page-tool" id="pageMenu" title="Page options">···</button></div>
         </div>
         <div class="page-content-grid" id="pageContentGrid">
           <article class="web-page" id="webPage" aria-label="Sample web page preview">
@@ -123,7 +123,7 @@
         <div class="split-divider" id="splitDivider" aria-hidden="true"></div>
         <section class="second-pane" id="secondPane" hidden aria-label="Second preview pane">
           <div class="second-pane-head"><span class="second-pane-dot"></span><span>SECOND PANE</span><button class="tiny-button" id="closeSplit" aria-label="Close split view">×</button></div>
-          <div class="second-pane-inner"><span class="pane-number">02</span><p class="pane-kicker">SIDE BY SIDE</p><h2>Two pages.<br><em>One thought.</em></h2><p class="pane-copy">Split view is shown here as an interface concept. A real browser integration will attach independent Chromium contents to each pane.</p><button class="pane-action" id="focusSecondPane">Focus this pane <span>↗</span></button></div>
+          <div class="second-pane-inner"><span class="pane-number">02</span><p class="pane-kicker">SIDE BY SIDE · LOCAL SAMPLE</p><p class="second-pane-url" id="secondPaneUrl">atlas.preview</p><h2 id="secondPaneTitle">Atlas of small ideas</h2><p class="pane-copy" id="secondPaneDeck">A collection of small observations, connected by curiosity.</p><div class="second-pane-actions"><button class="pane-action" id="focusSecondPane" aria-pressed="false">Focus this pane <span>↗</span></button><button class="pane-action secondary" id="nextSecondPane">Next sample <span>→</span></button></div><p class="pane-note">Prototype only — no separate Chromium tab or network page is attached.</p></div>
         </section>
       </div>
       <footer class="status-bar"><span><i class="status-light"></i> Prototype state · no network requests</span><span id="statusMood">ATELIER / NIGHT</span><span id="phaseLabel">PHASE 2 · VISUAL STUDY</span></footer>
