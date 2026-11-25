@@ -9,8 +9,11 @@ class BrowserSmokeTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.fake = Path(self.tmp.name) / "fake_browser.py"
         self.fake.write_text(
-            "import sys\n"
-            "print('<html><title>Example Domain</title><body>Example Domain</body></html>')\n",
+            "import sys\\nfrom pathlib import Path\\n"
+            "for arg in sys.argv:\\n"
+            "    if arg.startswith('--user-data-dir='):\\n"
+            "        Path(arg.split('=', 1)[1]).mkdir(parents=True, exist_ok=True)\\n"
+            "print('<html><title>Example Domain</title><body>Example Domain</body></html>')\\n",
             encoding="utf-8")
     def tearDown(self):
         self.tmp.cleanup()
@@ -29,7 +32,7 @@ class BrowserSmokeTests(unittest.TestCase):
             run_smoke(Path(sys.executable), [str(self.fake)], "http://example.com",
                      "Example Domain", timeout=10)
     def test_nonzero_browser_exit_fails(self):
-        self.fake.write_text("import sys\nsys.exit(7)\n", encoding="utf-8")
+        self.fake.write_text("import sys\\nsys.exit(7)\\n", encoding="utf-8")
         with self.assertRaisesRegex(SmokeTestError, "code 7"):
             run_smoke(Path(sys.executable), [str(self.fake)], "https://example.com",
                      "Example Domain", timeout=10)
