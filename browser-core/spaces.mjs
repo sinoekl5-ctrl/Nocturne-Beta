@@ -22,16 +22,16 @@ const ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/;
 
 function requireRecord(value, label) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
-    throw new TypeError(\`\${label} must be an object\`);
+    throw new TypeError(label + " must be an object");
   }
   return value;
 }
 
 function normalizeText(value, label, maxLength) {
-  if (typeof value !== "string") throw new TypeError(\`\${label} must be a string\`);
+  if (typeof value !== "string") throw new TypeError(label + " must be a string");
   const normalized = value.trim();
   if (!normalized || normalized.length > maxLength) {
-    throw new RangeError(\`\${label} must contain 1 to \${maxLength} characters\`);
+    throw new RangeError(label + " must contain 1 to " + maxLength + " characters");
   }
   return normalized;
 }
@@ -39,7 +39,7 @@ function normalizeText(value, label, maxLength) {
 function normalizeId(value, label) {
   const id = normalizeText(value ?? "", label, 48).toLowerCase();
   if (!ID_PATTERN.test(id)) {
-    throw new RangeError(\`\${label} must be a lowercase kebab-case identifier\`);
+    throw new RangeError(label + " must be a lowercase kebab-case identifier");
   }
   return id;
 }
@@ -50,7 +50,7 @@ function normalizeTabs(value = []) {
   return Object.freeze(value.map((entry) => {
     const source = requireRecord(entry, "Tab");
     const id = normalizeId(source.id, "Tab id");
-    if (ids.has(id)) throw new RangeError(\`Duplicate tab id: \${id}\`);
+    if (ids.has(id)) throw new RangeError("Duplicate tab id: " + id);
     ids.add(id);
     const title = normalizeText(source.title ?? "Untitled", "Tab title", 256);
     const url = normalizeText(source.url, "Tab URL", 8192);
@@ -66,7 +66,7 @@ function normalizePins(value = []) {
   return Object.freeze(value.map((entry) => {
     const source = requireRecord(entry, "Pin");
     const id = normalizeId(source.id, "Pin id");
-    if (ids.has(id)) throw new RangeError(\`Duplicate pin id: \${id}\`);
+    if (ids.has(id)) throw new RangeError("Duplicate pin id: " + id);
     ids.add(id);
     const title = normalizeText(source.title, "Pin title", 96);
     const url = normalizeText(source.url, "Pin URL", 8192);
@@ -80,7 +80,7 @@ function normalizeFolders(value = []) {
   return Object.freeze(value.map((entry) => {
     const source = requireRecord(entry, "Folder");
     const id = normalizeId(source.id, "Folder id");
-    if (ids.has(id)) throw new RangeError(\`Duplicate folder id: \${id}\`);
+    if (ids.has(id)) throw new RangeError("Duplicate folder id: " + id);
     ids.add(id);
     const name = normalizeText(source.name, "Folder name", 96);
     return Object.freeze({ id, name });
@@ -103,14 +103,14 @@ export function createSpaceDescriptor(input = {}) {
   const name = normalizeText(source.name ?? "", "Space name", 64);
   const mood = source.mood ?? "atelier";
   if (!SPACE_MOODS.includes(mood)) {
-    throw new RangeError(\`Unknown Space mood: \${String(mood)}\`);
+    throw new RangeError("Unknown Space mood: " + String(mood));
   }
 
   const isPrivate = source.private ?? false;
   if (typeof isPrivate !== "boolean") throw new TypeError("Space private flag must be boolean");
   const contentBlocking = source.contentBlocking ?? "balanced";
   if (!CONTENT_BLOCKING_MODES.includes(contentBlocking)) {
-    throw new RangeError(\`Unknown content-blocking mode: \${String(contentBlocking)}\`);
+    throw new RangeError("Unknown content-blocking mode: " + String(contentBlocking));
   }
 
   return Object.freeze({
@@ -154,7 +154,7 @@ function ensureOnePersistentSpace(spaces) {
 
 function replaceSpace(registry, id, changes) {
   const index = findSpaceIndex(registry.spaces, id);
-  if (index === -1) throw new RangeError(\`Unknown Space: \${id}\`);
+  if (index === -1) throw new RangeError("Unknown Space: " + id);
   const current = registry.spaces[index];
   const patch = requireRecord(changes, "Space changes");
   const updated = createSpaceDescriptor({
@@ -175,18 +175,15 @@ function replaceSpace(registry, id, changes) {
 function removeCollectionEntry(registry, spaceId, collection, entryId, label) {
   requireRegistry(registry);
   const space = registry.spaces.find((item) => item.id === spaceId);
-  if (!space) throw new RangeError(\`Unknown Space: \${spaceId}\`);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
   const entries = space[collection];
   if (!entries.some((entry) => entry.id === entryId)) {
-    throw new RangeError(\`Unknown \${label}: \${entryId}\`);
+    throw new RangeError("Unknown " + label + ": " + entryId);
   }
   return replaceSpace(registry, spaceId, { [collection]: entries.filter((entry) => entry.id !== entryId) });
 }
 
-export function createSpaceRegistry({
-  spaces = [DEFAULT_SPACE],
-  activeSpaceId,
-} = {}) {
+export function createSpaceRegistry({ spaces = [DEFAULT_SPACE], activeSpaceId } = {}) {
   if (!Array.isArray(spaces) || spaces.length === 0) {
     throw new RangeError("At least one Space is required");
   }
@@ -194,14 +191,14 @@ export function createSpaceRegistry({
   const normalized = spaces.map((space) => createSpaceDescriptor(space));
   const ids = new Set();
   for (const space of normalized) {
-    if (ids.has(space.id)) throw new RangeError(\`Duplicate Space id: \${space.id}\`);
+    if (ids.has(space.id)) throw new RangeError("Duplicate Space id: " + space.id);
     ids.add(space.id);
   }
   ensureOnePersistentSpace(normalized);
 
   const requestedActive = activeSpaceId ?? normalized[0].id;
   if (!ids.has(requestedActive)) {
-    throw new RangeError(\`Active Space does not exist: \${requestedActive}\`);
+    throw new RangeError("Active Space does not exist: " + requestedActive);
   }
   return freezeRegistry(normalized, requestedActive);
 }
@@ -210,7 +207,7 @@ export function addSpace(registry, input) {
   requireRegistry(registry);
   const next = createSpaceDescriptor(input);
   if (registry.spaces.some((space) => space.id === next.id)) {
-    throw new RangeError(\`Space already exists: \${next.id}\`);
+    throw new RangeError("Space already exists: " + next.id);
   }
   return freezeRegistry([...registry.spaces, next], registry.activeSpaceId);
 }
@@ -218,7 +215,7 @@ export function addSpace(registry, input) {
 export function activateSpace(registry, id) {
   requireRegistry(registry);
   if (findSpaceIndex(registry.spaces, id) === -1) {
-    throw new RangeError(\`Cannot activate unknown Space: \${id}\`);
+    throw new RangeError("Cannot activate unknown Space: " + id);
   }
   return freezeRegistry(registry.spaces, id);
 }
@@ -235,10 +232,10 @@ export function updateSpace(registry, id, changes) {
 export function addTabToSpace(registry, spaceId, tab) {
   requireRegistry(registry);
   const space = registry.spaces.find((item) => item.id === spaceId);
-  if (!space) throw new RangeError(\`Unknown Space: \${spaceId}\`);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
   const next = normalizeTabs([tab])[0];
   if (space.tabs.some((item) => item.id === next.id)) {
-    throw new RangeError(\`Tab already exists in Space: \${next.id}\`);
+    throw new RangeError("Tab already exists in Space: " + next.id);
   }
   return replaceSpace(registry, spaceId, { tabs: [...space.tabs, next] });
 }
@@ -250,10 +247,10 @@ export function removeTabFromSpace(registry, spaceId, tabId) {
 export function addPinToSpace(registry, spaceId, pin) {
   requireRegistry(registry);
   const space = registry.spaces.find((item) => item.id === spaceId);
-  if (!space) throw new RangeError(\`Unknown Space: \${spaceId}\`);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
   const next = normalizePins([pin])[0];
   if (space.pins.some((item) => item.id === next.id)) {
-    throw new RangeError(\`Pin already exists in Space: \${next.id}\`);
+    throw new RangeError("Pin already exists in Space: " + next.id);
   }
   return replaceSpace(registry, spaceId, { pins: [...space.pins, next] });
 }
@@ -265,10 +262,10 @@ export function removePinFromSpace(registry, spaceId, pinId) {
 export function addFolderToSpace(registry, spaceId, folder) {
   requireRegistry(registry);
   const space = registry.spaces.find((item) => item.id === spaceId);
-  if (!space) throw new RangeError(\`Unknown Space: \${spaceId}\`);
+  if (!space) throw new RangeError("Unknown Space: " + spaceId);
   const next = normalizeFolders([folder])[0];
   if (space.folders.some((item) => item.id === next.id)) {
-    throw new RangeError(\`Folder already exists in Space: \${next.id}\`);
+    throw new RangeError("Folder already exists in Space: " + next.id);
   }
   return replaceSpace(registry, spaceId, { folders: [...space.folders, next] });
 }
@@ -279,7 +276,7 @@ export function removeFolderFromSpace(registry, spaceId, folderId) {
 
 export function removeSpace(registry, id) {
   requireRegistry(registry);
-  if (findSpaceIndex(registry.spaces, id) === -1) throw new RangeError(\`Cannot remove unknown Space: \${id}\`);
+  if (findSpaceIndex(registry.spaces, id) === -1) throw new RangeError("Cannot remove unknown Space: " + id);
   const spaces = registry.spaces.filter((space) => space.id !== id);
   ensureOnePersistentSpace(spaces);
 
