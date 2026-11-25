@@ -59,8 +59,8 @@ Deliverables: project charter, platform decision, GPL/NOTICE baseline, provenanc
 
 - Pin Chromium source, Helium root and matching platform package revisions.
 - Establish a reproducible build/caching environment sized for Chromium; keep build host and artifact provenance documented.
-- Register a minimal `chrome://nocturne/` WebUI and a narrow typed native bridge.
-- Prove origin/frame checks and deny calls from ordinary web pages.
+- Register a minimal privileged WebUI page and a narrow typed native bridge. The protocol/reference contract and Node conformance tests now exist in the security bridge document and core contract module; neither is a live Chromium bridge.
+- Implement the contract independently in the native host; derive origin/frame context from Chromium and prove origin/frame checks deny calls from ordinary web pages and subframes.
 - Apply Nocturne application identity without copying Helium branding; keep Nocturne patches distinct.
 
 **Exit:** installable browser alpha with real navigation and a minimal shared shell on Windows, Linux and macOS; smoke tests pass on each platform. This is not satisfied by the current visual prototype.
