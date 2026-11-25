@@ -50,3 +50,9 @@ test("Split View supports pointer dragging and keyboard resizing", () => {
   assert.match(app, /event\.key === "End"/);
   assert.match(app, /aria-valuetext/);
 });
+
+test("Split View ratio clamps finite edge values and safely handles invalid input", () => {
+  assert.match(app, /Number\.isFinite\(numericValue\)/);
+  assert.match(app, /Math\.max\(25, Math\.min\(75,/);
+  assert.doesNotMatch(app, /Number\(value\) \|\| 50/);
+});
